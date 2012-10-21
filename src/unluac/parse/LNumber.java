@@ -23,7 +23,7 @@ class LFloatNumber extends LNumber {
   
   @Override
   public String toString() {
-    if(Math.round(number) == (int) number) {
+    if(number == (float) Math.round(number)) {
       return Integer.toString((int) number);
     } else {
       return Float.toString(number);
@@ -57,7 +57,7 @@ class LDoubleNumber extends LNumber {
   
   @Override
   public String toString() {
-    if(Math.round(number) == (long) number) {
+    if(number == (double) Math.round(number)) {
       return Long.toString((long) number);
     } else {
       return Double.toString(number);
