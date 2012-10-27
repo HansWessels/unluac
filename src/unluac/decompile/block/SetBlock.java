@@ -1,6 +1,7 @@
 package unluac.decompile.block;
 
 import unluac.decompile.Decompiler;
+import unluac.decompile.Op;
 import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.branch.Branch;
@@ -10,6 +11,7 @@ import unluac.decompile.operation.RegisterSet;
 import unluac.decompile.statement.Assignment;
 import unluac.decompile.statement.Statement;
 import unluac.decompile.target.Target;
+import unluac.parse.LFunction;
 
 public class SetBlock extends Block {
   
@@ -20,8 +22,8 @@ public class SetBlock extends Block {
   private boolean empty;
   private boolean finalize = false;
   
-  public SetBlock(Branch branch, int target, int line, int begin, int end, boolean empty, Registers r) {
-    super(begin, end);
+  public SetBlock(LFunction function, Branch branch, int target, int line, int begin, int end, boolean empty, Registers r) {
+    super(function, begin, end);
     this.empty = empty;
     if(begin == end) this.begin -= 1;
     this.target = target;
@@ -118,9 +120,9 @@ public class SetBlock extends Block {
             //System.out.println("-- target = " + target + "@" + (branch.end - 1));
             //.print(new Output());
             //System.out.println();
-          } else if(d.code.op(branch.end - 2) == Decompiler.LOADBOOL && d.code.C(branch.end - 2) != 0) {
+          } else if(d.code.op(branch.end - 2) == Op.LOADBOOL && d.code.C(branch.end - 2) != 0) {
             int target = d.code.A(branch.end - 2);
-            if(d.code.op(branch.end - 3) == Decompiler.JMP && d.code.sBx(branch.end - 3) == 2) {
+            if(d.code.op(branch.end - 3) == Op.JMP && d.code.sBx(branch.end - 3) == 2) {
               //System.out.println("-- Dropped boolean expression operand");
               expr = r.getValue(target, branch.end - 2);
             } else {

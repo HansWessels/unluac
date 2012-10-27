@@ -31,6 +31,11 @@ public class VariableTarget extends Target {
     return true;
   }
   
+  @Override
+  public int getIndex() {
+    return decl.register;
+  }
+  
   public boolean equals(Object obj) {
     if(obj instanceof VariableTarget) {
       VariableTarget t = (VariableTarget) obj;

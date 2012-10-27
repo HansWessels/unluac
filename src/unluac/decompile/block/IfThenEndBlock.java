@@ -15,6 +15,7 @@ import unluac.decompile.expression.LocalVariable;
 import unluac.decompile.operation.Operation;
 import unluac.decompile.statement.Assignment;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 import unluac.util.Stack;
 
 public class IfThenEndBlock extends Block {
@@ -24,12 +25,12 @@ public class IfThenEndBlock extends Block {
   private final Registers r;
   private final List<Statement> statements;
   
-  public IfThenEndBlock(Branch branch, Registers r) {
-    this(branch, null, r);
+  public IfThenEndBlock(LFunction function, Branch branch, Registers r) {
+    this(function, branch, null, r);
   }
    
-  public IfThenEndBlock(Branch branch, Stack<Branch> stack, Registers r) {
-    super(branch.begin, branch.end);
+  public IfThenEndBlock(LFunction function, Branch branch, Stack<Branch> stack, Registers r) {
+    super(function, branch.begin, branch.end);
     this.branch = branch;
     this.stack = stack;
     this.r = r;

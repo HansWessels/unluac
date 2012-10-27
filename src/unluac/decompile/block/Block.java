@@ -4,14 +4,17 @@ import unluac.decompile.Decompiler;
 import unluac.decompile.Registers;
 import unluac.decompile.operation.Operation;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 abstract public class Block extends Statement implements Comparable<Block> {
 
+  protected final LFunction function;
   public int begin;
   public int end;
   public boolean loopRedirectAdjustment = false;
   
-  public Block(int begin, int end) {
+  public Block(LFunction function, int begin, int end) {
+    this.function = function;
     this.begin = begin;
     this.end = end;
   }

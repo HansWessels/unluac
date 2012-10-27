@@ -2,11 +2,12 @@ package unluac.decompile.block;
 
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class BooleanIndicator extends Block {
 
-  public BooleanIndicator(int line) {
-    super(line, line);
+  public BooleanIndicator(LFunction function, int line) {
+    super(function, line, line);
   }
 
   @Override

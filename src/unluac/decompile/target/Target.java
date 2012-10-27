@@ -17,6 +17,10 @@ abstract public class Target {
     return false;
   }
   
+  public int getIndex() {
+    throw new IllegalStateException();
+  }
+  
   public boolean isFunctionName() {
     return true;
   }

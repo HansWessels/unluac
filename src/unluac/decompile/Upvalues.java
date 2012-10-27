@@ -1,18 +1,19 @@
 package unluac.decompile;
 
 import unluac.decompile.expression.UpvalueExpression;
+import unluac.parse.LUpvalue;
 
 public class Upvalues {
 
-  private final String[] names;
+  private final LUpvalue[] upvalues;
   
-  public Upvalues(String[] names) {
-    this.names = names;
+  public Upvalues(LUpvalue[] upvalues) {
+    this.upvalues = upvalues;
   }
   
   public String getName(int index) {
-    if(index < names.length) {
-      return names[index];
+    if(index < upvalues.length && upvalues[index].name != null) {
+      return upvalues[index].name;
     } else {
       //TODO: SET ERROR
       return "_UPVALUE" + index + "_";

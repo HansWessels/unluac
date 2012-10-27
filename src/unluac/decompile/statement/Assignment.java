@@ -95,9 +95,15 @@ public class Assignment extends Statement {
       if(targets.size() == 1 && values.size() == 1 && values.get(0).isClosure() && targets.get(0).isFunctionName()) {
         Expression closure = values.get(0);
         //comment = "" + declareStart + " >= " + closure.closureUpvalueLine();
+        //System.out.println("" + declareStart + " >= " + closure.closureUpvalueLine());
+        // This check only works in Lua version 0x51
         if(!declare || declareStart >= closure.closureUpvalueLine()) {
           functionSugar = true;
         }
+        if(targets.get(0).isLocal() && closure.isUpvalueOf(targets.get(0).getIndex())) {
+          functionSugar = true;
+        }
+        //if(closure.isUpvalueOf(targets.get(0).))
       }
       if(!functionSugar) {
         targets.get(0).print(out);

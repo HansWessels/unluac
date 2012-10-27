@@ -7,6 +7,7 @@ import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class TForBlock extends Block {
 
@@ -15,8 +16,8 @@ public class TForBlock extends Block {
   private final Registers r;
   private final List<Statement> statements;
   
-  public TForBlock(int begin, int end, int register, int length, Registers r) {
-    super(begin, end);
+  public TForBlock(LFunction function, int begin, int end, int register, int length, Registers r) {
+    super(function, begin, end);
     this.register = register;
     this.length = length;
     this.r = r;

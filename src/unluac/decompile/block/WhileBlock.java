@@ -7,6 +7,7 @@ import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.branch.Branch;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class WhileBlock extends Block {
 
@@ -15,8 +16,8 @@ public class WhileBlock extends Block {
   private final Registers r;
   private final List<Statement> statements;
   
-  public WhileBlock(Branch branch, int loopback, Registers r) {
-    super(branch.begin, branch.end);
+  public WhileBlock(LFunction function, Branch branch, int loopback, Registers r) {
+    super(function, branch.begin, branch.end);
     this.branch = branch;
     this.loopback = loopback;
     this.r = r;

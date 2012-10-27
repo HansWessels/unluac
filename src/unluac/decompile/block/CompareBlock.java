@@ -8,14 +8,15 @@ import unluac.decompile.expression.Expression;
 import unluac.decompile.operation.Operation;
 import unluac.decompile.operation.RegisterSet;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class CompareBlock extends Block {
 
   public int target;
   public Branch branch;
   
-  public CompareBlock(int begin, int end, int target, Branch branch) {
-    super(begin, end);
+  public CompareBlock(LFunction function, int begin, int end, int target, Branch branch) {
+    super(function, begin, end);
     this.target = target;
     this.branch = branch;
   }

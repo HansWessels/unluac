@@ -7,6 +7,7 @@ import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.branch.Branch;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class RepeatBlock extends Block {
 
@@ -14,8 +15,8 @@ public class RepeatBlock extends Block {
   private final Registers r;
   private final List<Statement> statements;
   
-  public RepeatBlock(Branch branch, Registers r) {
-    super(branch.end, branch.begin);
+  public RepeatBlock(LFunction function, Branch branch, Registers r) {
+    super(function, branch.end, branch.begin);
     //System.out.println("-- creating repeat block " + branch.end + " .. " + branch.begin);
     this.branch = branch;
     this.r = r;

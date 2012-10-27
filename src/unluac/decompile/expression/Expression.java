@@ -141,6 +141,11 @@ abstract public class Expression {
     return false;
   }
   
+  // Only supported for closures
+  public boolean isUpvalueOf(int register) {
+    throw new IllegalStateException();
+  }
+  
   public boolean isBoolean() {
     return false;
   }

@@ -14,7 +14,7 @@ public class BSizeTType extends BObjectType<BSizeT> {
   }
   
   public BSizeT parse(ByteBuffer buffer, BHeader header) {
-    BSizeT value = new BSizeT(integerType.raw_parse(buffer, header));    
+    BSizeT value = new BSizeT(integerType.raw_parse(buffer, header));
     if(header.debug) {
       System.out.println("-- parsed <size_t> " + value.asInt());
     }

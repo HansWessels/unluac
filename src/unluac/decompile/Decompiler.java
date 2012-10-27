@@ -31,17 +31,13 @@ import unluac.decompile.branch.OrBranch;
 import unluac.decompile.branch.TestNode;
 import unluac.decompile.branch.TestSetNode;
 import unluac.decompile.branch.TrueNode;
-import unluac.decompile.expression.BinaryExpression;
 import unluac.decompile.expression.ClosureExpression;
 import unluac.decompile.expression.ConstantExpression;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.expression.FunctionCall;
 import unluac.decompile.expression.GlobalExpression;
-import unluac.decompile.expression.LocalVariable;
 import unluac.decompile.expression.TableLiteral;
 import unluac.decompile.expression.TableReference;
-import unluac.decompile.expression.UnaryExpression;
-import unluac.decompile.expression.UpvalueExpression;
 import unluac.decompile.expression.Vararg;
 import unluac.decompile.operation.CallOperation;
 import unluac.decompile.operation.GlobalSet;
@@ -51,9 +47,6 @@ import unluac.decompile.operation.ReturnOperation;
 import unluac.decompile.operation.TableSet;
 import unluac.decompile.operation.UpvalueSet;
 import unluac.decompile.statement.Assignment;
-import unluac.decompile.statement.Declare;
-import unluac.decompile.statement.FunctionCallStatement;
-import unluac.decompile.statement.Return;
 import unluac.decompile.statement.Statement;
 import unluac.decompile.target.GlobalTarget;
 import unluac.decompile.target.TableTarget;
@@ -62,50 +55,9 @@ import unluac.decompile.target.UpvalueTarget;
 import unluac.decompile.target.VariableTarget;
 import unluac.parse.LBoolean;
 import unluac.parse.LFunction;
-import unluac.parse.LLocal;
-import unluac.parse.LNil;
 import unluac.util.Stack;
 
 public class Decompiler {
-
-  public static final int MOVE = 0;
-  public static final int LOADK = 1;
-  public static final int LOADBOOL = 2;
-  public static final int LOADNIL = 3;
-  public static final int GETUPVAL = 4;
-  public static final int GETGLOBAL = 5;
-  public static final int GETTABLE = 6;
-  public static final int SETGLOBAL = 7;
-  public static final int SETUPVAL = 8;
-  public static final int SETTABLE = 9;
-  public static final int NEWTABLE = 10;
-  public static final int SELF = 11;
-  public static final int ADD = 12;
-  public static final int SUB = 13;
-  public static final int MUL = 14;
-  public static final int DIV = 15;
-  public static final int MOD = 16;
-  public static final int POW = 17;
-  public static final int UNM = 18;
-  public static final int NOT = 19;
-  public static final int LEN = 20;
-  public static final int CONCAT = 21;
-  public static final int JMP = 22;
-  public static final int EQ = 23;
-  public static final int LT = 24;
-  public static final int LE = 25;
-  public static final int TEST = 26;
-  public static final int TESTSET = 27;
-  public static final int CALL = 28;
-  public static final int TAILCALL = 29;
-  public static final int RETURN = 30;
-  public static final int FORLOOP = 31;
-  public static final int FORPREP = 32;
-  public static final int TFORLOOP = 33;
-  public static final int SETLIST = 34;
-  public static final int CLOSE = 35;
-  public static final int CLOSURE = 36;
-  public static final int VARARG = 37;
   
   private final int registers;
   private final int length;
@@ -114,14 +66,18 @@ public class Decompiler {
   private final Upvalues upvalues;
   public final Declaration[] declList;
   
+  protected LFunction function;
   private final LFunction[] functions;  
   private final int params;
   private final int vararg;
   
+  private Op tforTarget = Op.TFORLOOP;
+  
   public Decompiler(LFunction function) {
+    this.function = function;
     registers = function.maximumStackSize;
     length = function.code.length;
-    code = new Code(function.code);
+    code = new Code(function);
     constants = new Constant[function.constants.length];
     for(int i = 0; i < constants.length; i++) {
       constants[i] = new Constant(function.constants[i]);
@@ -142,6 +98,9 @@ public class Decompiler {
     functions = function.functions;
     params = function.numParams;
     vararg = function.vararg;
+    if(function.header.version == 0x52) {
+      tforTarget = Op.TFORCALL;
+    }
   }
   
   private Registers r;
@@ -202,14 +161,28 @@ public class Decompiler {
       case LOADBOOL:
         operations.add(new RegisterSet(line, A, new ConstantExpression(new Constant(B != 0 ? LBoolean.LTRUE : LBoolean.LFALSE), -1)));
         break;
-      case LOADNIL:
-        while(A <= B) {
+      case LOADNIL: {
+        int maximum;
+        if(function.header.version == 0x52) {
+          maximum = A + B;
+        } else {
+          maximum = B;
+        }
+        while(A <= maximum) {
           operations.add(new RegisterSet(line, A, Expression.NIL));
           A++;
         }
         break;
+      }
       case GETUPVAL:
         operations.add(new RegisterSet(line, A, upvalues.getExpression(B)));
+        break;
+      case GETTABUP:
+        if(B == 0 && (C & 0x100) != 0) {
+          operations.add(new RegisterSet(line, A, new GlobalExpression(constants[C & 0xFF].asName(), C & 0xFF))); //TODO: check
+        } else {
+          operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
+        }
         break;
       case GETGLOBAL:
         operations.add(new RegisterSet(line, A, new GlobalExpression(constants[Bx].asName(), Bx)));
@@ -219,6 +192,13 @@ public class Decompiler {
         break;
       case SETUPVAL:
         operations.add(new UpvalueSet(line, upvalues.getName(B), r.getExpression(A, line)));
+        break;
+      case SETTABUP:
+        if(A == 0 && (B & 0x100) != 0) {
+          operations.add(new GlobalSet(line, constants[B & 0xFF].asName(), r.getKExpression(C, line))); //TODO: check
+        } else {
+          operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
+        }
         break;
       case SETGLOBAL:
         operations.add(new GlobalSet(line, constants[Bx].asName(), r.getExpression(A, line)));
@@ -326,6 +306,7 @@ public class Decompiler {
       }
       case FORLOOP:
       case FORPREP:
+      case TFORCALL:
       case TFORLOOP:
         /* Do nothing ... handled with branches */
         break;
@@ -348,8 +329,11 @@ public class Decompiler {
       case CLOSURE: {
         LFunction f = functions[Bx];
         operations.add(new RegisterSet(line, A, new ClosureExpression(f, declList, line + 1)));
-        for(int i = 0; i < f.numUpvalues; i++) {
-          skip[line + 1 + i] = true;
+        if(function.header.version == 0x51) {
+          // Skip upvalue declarations
+          for(int i = 0; i < f.numUpvalues; i++) {
+            skip[line + 1 + i] = true;
+          }
         }
         break;
       }
@@ -387,7 +371,7 @@ public class Decompiler {
     reverseTarget = new boolean[length + 1];
     Arrays.fill(reverseTarget, false);
     for(int line = 1; line <= length; line++) {
-      if(code.op(line) == JMP && code.sBx(line) < 0) {
+      if(code.op(line) == Op.JMP && code.sBx(line) < 0) {
         reverseTarget[line + 1 + code.sBx(line)] = true;
       }
     }
@@ -476,7 +460,7 @@ public class Decompiler {
       //List<Declaration> newLocals = r.getNewLocals(line);
       Assignment assign = null;
       if(blockHandler == null) {
-        if(code.op(line) == LOADNIL) {
+        if(code.op(line) == Op.LOADNIL) {
           assign = new Assignment();
           int count = 0;
           for(Operation operation : operations) {
@@ -497,7 +481,7 @@ public class Decompiler {
             Assignment temp = processOperation(operation, line, line + 1, block);
             if(temp != null) {
               assign = temp;
-              //System.out.print("-- top assign -> "); temp.getFirstTarget().print(out); System.out.println();
+              //System.out.print("-- top assign -> "); temp.getFirstTarget().print(new Output()); System.out.println();
             }
           }
           if(assign != null && assign.getFirstValue().isMultiple()) {
@@ -520,8 +504,8 @@ public class Decompiler {
       if(blockHandler == null) {
         if(assign != null) {
           
-        } else if(!newLocals.isEmpty() && code.op(line) != FORPREP) {
-          if(code.op(line) != JMP || code.op(line + 1 + code.sBx(line)) != TFORLOOP) {
+        } else if(!newLocals.isEmpty() && code.op(line) != Op.FORPREP) {
+          if(code.op(line) != Op.JMP || code.op(line + 1 + code.sBx(line)) != tforTarget) {
             assign = new Assignment();
             assign.declare(newLocals.get(0).begin);
             for(Declaration decl : newLocals) {
@@ -600,7 +584,7 @@ public class Decompiler {
   private OuterBlock handleBranches(boolean first) {
     List<Block> oldBlocks = blocks;
     blocks = new ArrayList<Block>();
-    OuterBlock outer = new OuterBlock(length);
+    OuterBlock outer = new OuterBlock(function, length);
     blocks.add(outer);
     if(!first) {
       for(Block block : oldBlocks) {
@@ -623,10 +607,10 @@ public class Decompiler {
           case EQ:
             stack.push(new EQNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == LOADBOOL) {
+            if(code.op(stack.peek().end) == Op.LOADBOOL) {
               if(code.C(stack.peek().end) != 0) {
                 stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == LOADBOOL) {
+              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
                 if(code.C(stack.peek().end - 1) != 0) {
                   stack.peek().isCompareSet = true;
                 }
@@ -636,10 +620,10 @@ public class Decompiler {
           case LT:
             stack.push(new LTNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == LOADBOOL) {
+            if(code.op(stack.peek().end) == Op.LOADBOOL) {
               if(code.C(stack.peek().end) != 0) {
                 stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == LOADBOOL) {
+              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
                 if(code.C(stack.peek().end - 1) != 0) {
                   stack.peek().isCompareSet = true;
                 }
@@ -649,10 +633,10 @@ public class Decompiler {
           case LE:
             stack.push(new LENode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == LOADBOOL) {
+            if(code.op(stack.peek().end) == Op.LOADBOOL) {
               if(code.C(stack.peek().end) != 0) {
                 stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == LOADBOOL) {
+              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
                 if(code.C(stack.peek().end - 1) != 0) {
                   stack.peek().isCompareSet = true;
                 }
@@ -672,10 +656,10 @@ public class Decompiler {
           case JMP: {
             reduce = true;
             int tline = line + 1 + code.sBx(line);
-            if(tline >= 2 && code.op(tline - 1) == LOADBOOL && code.C(tline - 1) != 0) {
+            if(tline >= 2 && code.op(tline - 1) == Op.LOADBOOL && code.C(tline - 1) != 0) {
               stack.push(new TrueNode(code.A(tline - 1), false, line, line + 1, tline));
               skip[line + 1] = true;
-            } else if(code.op(tline) == TFORLOOP && !skip[tline]) {
+            } else if(code.op(tline) == tforTarget && !skip[tline]) {
               int A = code.A(tline);
               int C = code.C(tline);
               if(C == 0) throw new IllegalStateException();
@@ -687,10 +671,10 @@ public class Decompiler {
               }
               skip[tline] = true;
               skip[tline + 1] = true;
-              blocks.add(new TForBlock(line + 1, tline + 2, A, C, r));
-            } else if(code.sBx(line) == 2 && code.op(line + 1) == LOADBOOL && code.C(line + 1) != 0) {
+              blocks.add(new TForBlock(function, line + 1, tline + 2, A, C, r));
+            } else if(code.sBx(line) == 2 && code.op(line + 1) == Op.LOADBOOL && code.C(line + 1) != 0) {
               /* This is the tail of a boolean set with a compare node and assign node */
-              blocks.add(new BooleanIndicator(line));
+              blocks.add(new BooleanIndicator(function, line));
             } else {
               /*
               for(Block block : blocks) {
@@ -701,9 +685,9 @@ public class Decompiler {
               */
               if(first) {
                 if(tline > line) {
-                  blocks.add(new Break(line, tline));
+                  blocks.add(new Break(function, line, tline));
                 } else {
-                  blocks.add(new AlwaysLoop(tline, line + 1));
+                  blocks.add(new AlwaysLoop(function, tline, line + 1));
                 }
               }
             }
@@ -711,7 +695,7 @@ public class Decompiler {
           }
           case FORPREP:
             reduce = true;
-            blocks.add(new ForBlock(line + 1, line + 2 + code.sBx(line), code.A(line), r));
+            blocks.add(new ForBlock(function, line + 1, line + 2 + code.sBx(line), code.A(line), r));
             skip[line + 1 + code.sBx(line)] = true;
             r.setInternalLoopVariable(code.A(line), line, line + 2 + code.sBx(line));
             r.setInternalLoopVariable(code.A(line) + 1, line, line + 2 + code.sBx(line));
@@ -755,7 +739,7 @@ public class Decompiler {
             }
             //System.exit(0);
           } else if(stack.peek().isCompareSet) {
-            if(code.op(stack.peek().begin) != LOADBOOL || code.C(stack.peek().begin) == 0) {
+            if(code.op(stack.peek().begin) != Op.LOADBOOL || code.C(stack.peek().begin) == 0) {
               isAssignNode = true;
               if(code.C(assignEnd) != 0) {
                 assignEnd += 2;
@@ -764,7 +748,7 @@ public class Decompiler {
               }
               compareCorrect = true;
             }
-          } else if(assignEnd - 3 >= 1 && code.op(assignEnd - 2) == LOADBOOL && code.C(assignEnd - 2) != 0 && code.op(assignEnd - 3) == JMP && code.sBx(assignEnd - 3) == 2) {
+          } else if(assignEnd - 3 >= 1 && code.op(assignEnd - 2) == Op.LOADBOOL && code.C(assignEnd - 2) != 0 && code.op(assignEnd - 3) == Op.JMP && code.sBx(assignEnd - 3) == 2) {
             if(stack.peek() instanceof TestNode) {
               TestNode node = (TestNode) stack.peek();
               if(node.test == code.A(assignEnd - 2)) {
@@ -777,7 +761,7 @@ public class Decompiler {
               isAssignNode = true;
             }
           }
-          if(!compareCorrect && assignEnd - 1 == stack.peek().begin && code.op(stack.peek().begin) == LOADBOOL && code.C(stack.peek().begin) != 0) {
+          if(!compareCorrect && assignEnd - 1 == stack.peek().begin && code.op(stack.peek().begin) == Op.LOADBOOL && code.C(stack.peek().begin) != 0) {
             backup = null;
             int begin = stack.peek().begin;
             assignEnd = begin + 2;
@@ -809,14 +793,14 @@ public class Decompiler {
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
             for(int iline = immediateEnclosing.end - 1; iline >= immediateEnclosing.begin; iline--) {
-              if(code.op(iline) == JMP && iline + 1 + code.sBx(iline) == breakTarget) {
+              if(code.op(iline) == Op.JMP && iline + 1 + code.sBx(iline) == breakTarget) {
                 cond.end = iline;
                 break;
               }
             }
           }
           /* A branch has a tail if the instruction just before the end target is JMP */
-          boolean hasTail = cond.end >= 2 && code.op(cond.end - 1) == JMP;
+          boolean hasTail = cond.end >= 2 && code.op(cond.end - 1) == Op.JMP;
           /* This is the target of the tail JMP */
           int tail = hasTail ? cond.end + code.sBx(cond.end - 1) : -1;
           int originalTail = tail;
@@ -828,7 +812,7 @@ public class Decompiler {
             //System.out.println("tail    : " + tail);
             if(enclosing.getLoopback() == cond.end) {
               cond.end = enclosing.end - 1;
-              hasTail = cond.end >= 2 && code.op(cond.end - 1) == JMP;
+              hasTail = cond.end >= 2 && code.op(cond.end - 1) == Op.JMP;
               tail = hasTail ? cond.end + code.sBx(cond.end - 1) : -1;
             }
             if(hasTail && enclosing.getLoopback() == tail) {
@@ -837,45 +821,47 @@ public class Decompiler {
           }
           if(cond.isSet) {
             boolean empty = cond.begin == cond.end;
-            if(code.op(cond.begin) == JMP && code.sBx(cond.begin) == 2 && code.op(cond.begin + 1) == LOADBOOL && code.C(cond.begin + 1) != 0) {
+            if(code.op(cond.begin) == Op.JMP && code.sBx(cond.begin) == 2 && code.op(cond.begin + 1) == Op.LOADBOOL && code.C(cond.begin + 1) != 0) {
               empty = true;
             }
-            blocks.add(new SetBlock(cond, cond.setTarget, line, cond.begin, cond.end, empty, r));
-          } else if(code.op(cond.begin) == LOADBOOL && code.C(cond.begin) != 0) {
+            blocks.add(new SetBlock(function, cond, cond.setTarget, line, cond.begin, cond.end, empty, r));
+          } else if(code.op(cond.begin) == Op.LOADBOOL && code.C(cond.begin) != 0) {
             int begin = cond.begin;
             int target = code.A(begin);
             if(code.B(begin) == 0) {
               cond = cond.invert();
             }
-            blocks.add(new CompareBlock(begin, begin + 2, target, cond));
+            blocks.add(new CompareBlock(function, begin, begin + 2, target, cond));
           } else if(cond.end < cond.begin) {
-            blocks.add(new RepeatBlock(cond, r));
+            blocks.add(new RepeatBlock(function, cond, r));
           } else if(hasTail) {
             if(tail > cond.end) {
-              int op = code.op(tail - 1);
+              Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
               int loopback2 = tail + sbx;
-              if((op == FORLOOP || op == JMP) && loopback2 <= cond.begin) {
+              if((op == Op.FORLOOP || op == Op.JMP || (op == Op.TFORLOOP && function.header.version == 0x52)) && loopback2 <= cond.begin) {
                 /* (ends with break) */
-                blocks.add(new IfThenEndBlock(cond, backup, r));
+                blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
-                IfThenElseBlock ifthen = new IfThenElseBlock(cond, originalTail, r);
+                IfThenElseBlock ifthen = new IfThenElseBlock(function, cond, originalTail, r);
                 skip[cond.end - 1] = true; //Skip the JMP over the else block
-                ElseEndBlock elseend = new ElseEndBlock(cond.end, tail);
+                ElseEndBlock elseend = new ElseEndBlock(function, cond.end, tail);
                 blocks.add(ifthen);
                 blocks.add(elseend);
               }
             } else {
               int loopback = tail;
-              skip[cond.end - 1] = true;
+              //TODO: check for 5.2-style if cond then break end
               if(loopback >= cond.begin) {
-                blocks.add(new IfThenEndBlock(cond, backup, r));
+                skip[cond.end - 1] = true;
+                blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
-                blocks.add(new WhileBlock(cond, originalTail, r));
+                skip[cond.end - 1] = true;
+                blocks.add(new WhileBlock(function, cond, originalTail, r));
               }
             }          
           } else {
-            blocks.add(new IfThenEndBlock(cond, backup, r));
+            blocks.add(new IfThenEndBlock(function, cond, backup, r));
           }
         } while(!conditions.isEmpty());
       }
@@ -896,7 +882,7 @@ public class Decompiler {
           //Without accounting for the order of declarations, we might
           //create another do..end block later that would eliminate the
           //need for this one. But order of decls should fix this.
-          blocks.add(new DoEndBlock(decl.begin, decl.end + 1));
+          blocks.add(new DoEndBlock(function, decl.begin, decl.end + 1));
         }
       }
     }
@@ -1015,14 +1001,14 @@ public class Decompiler {
     if(invert) {
       branch = branch.invert();
     }
-    if(code.op(begin) == LOADBOOL) {
+    if(code.op(begin) == Op.LOADBOOL) {
       if(code.C(begin) != 0) {
         begin += 2;
       } else {
         begin += 1;
       }
     }
-    if(code.op(end) == LOADBOOL) {
+    if(code.op(end) == Op.LOADBOOL) {
       if(code.C(end) != 0) {
         end += 2;
       } else {
@@ -1039,7 +1025,7 @@ public class Decompiler {
       //System.err.println("_helper_popSetCondition; next end:   " + next.end);
       boolean ninvert;
       int nend = next.end;
-      if(code.op(next.end) == LOADBOOL) {
+      if(code.op(next.end) == Op.LOADBOOL) {
         ninvert = code.B(next.end) != 0;
         if(code.C(next.end) != 0) {
           nend += 2;
@@ -1104,6 +1090,7 @@ public class Decompiler {
       case LOADK:
       case LOADBOOL:
       case GETUPVAL:
+      case GETTABUP:
       case GETGLOBAL:
       case GETTABLE:
       case NEWTABLE:
@@ -1128,12 +1115,14 @@ public class Decompiler {
         return false;
       case SETGLOBAL:
       case SETUPVAL:
+      case SETTABUP:
       case SETTABLE:
       case JMP:
       case TAILCALL:
       case RETURN:
       case FORLOOP:
       case FORPREP:
+      case TFORCALL:
       case TFORLOOP:
       case CLOSE:
         return true;
@@ -1186,6 +1175,7 @@ public class Decompiler {
       case LOADK:
       case LOADBOOL:
       case GETUPVAL:
+      case GETTABUP:
       case GETGLOBAL:
       case GETTABLE:
       case NEWTABLE:
@@ -1209,12 +1199,14 @@ public class Decompiler {
         }
       case SETGLOBAL:
       case SETUPVAL:
+      case SETTABUP:
       case SETTABLE:
       case JMP:
       case TAILCALL:
       case RETURN:
       case FORLOOP:
       case FORPREP:
+      case TFORCALL:
       case TFORLOOP:
       case CLOSE:
         return -1;

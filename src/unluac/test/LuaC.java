@@ -3,12 +3,12 @@ package unluac.test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 
 public class LuaC {
 
   public static void compile(String in, String out) throws IOException {
     ProcessBuilder pb = new ProcessBuilder("luac", "-o", out, in);
+    //ProcessBuilder pb = new ProcessBuilder("C:\\LuaTest\\bin\\luac515_single.exe", "-o", out, in);
     pb.directory(null);
     Process p = pb.start();
     while(true) {

@@ -9,7 +9,7 @@ public class Function {
   public final int numParams;
   public final int vararg;
   public final int registers;
-  public final Code code;
+  //public final Code code;
   public final Constant[] constants;
   
   //private Declaration 
@@ -19,7 +19,7 @@ public class Function {
     numParams = function.numParams;
     vararg = function.vararg;
     registers = function.maximumStackSize;
-    code = new Code(function.code);
+    //code = new Code(function.code);
     LObject[] bconstants = function.constants;
     constants = new Constant[bconstants.length];
     for(int index = 0; index < bconstants.length; index++) {

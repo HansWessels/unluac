@@ -7,6 +7,7 @@ import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class ForBlock extends Block {
 
@@ -14,8 +15,8 @@ public class ForBlock extends Block {
   private final Registers r;
   private final List<Statement> statements;
   
-  public ForBlock(int begin, int end, int register, Registers r) {
-    super(begin, end);
+  public ForBlock(LFunction function, int begin, int end, int register, Registers r) {
+    super(function, begin, end);
     this.register = register;
     this.r = r;
     statements = new ArrayList<Statement>(end - begin + 1);

@@ -5,14 +5,15 @@ import java.util.List;
 
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class ElseEndBlock extends Block {
 
   private final List<Statement> statements;
   public IfThenElseBlock partner;
   
-  public ElseEndBlock(int begin, int end) {
-    super(begin, end);
+  public ElseEndBlock(LFunction function, int begin, int end) {
+    super(function, begin, end);
     statements = new ArrayList<Statement>(end - begin + 1);
   }
     

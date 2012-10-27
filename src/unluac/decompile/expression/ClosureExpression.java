@@ -7,6 +7,7 @@ import unluac.decompile.target.TableTarget;
 import unluac.decompile.target.Target;
 import unluac.decompile.target.VariableTarget;
 import unluac.parse.LFunction;
+import unluac.parse.LUpvalue;
 
 public class ClosureExpression extends Expression {
 
@@ -28,6 +29,20 @@ public class ClosureExpression extends Expression {
   @Override
   public boolean isClosure() {
     return true;
+  }
+  
+  @Override
+  public boolean isUpvalueOf(int register) {
+    if(function.header.version == 0x51) {
+      return false; //TODO:
+    }
+    for(int i = 0; i < function.upvalues.length; i++) {
+      LUpvalue upvalue = function.upvalues[i];
+      if(upvalue.instack && upvalue.idx == register) {
+        return true;
+      }
+    }
+    return false;
   }
   
   @Override

@@ -5,13 +5,14 @@ import java.util.List;
 
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
+import unluac.parse.LFunction;
 
 public class OuterBlock extends Block {
 
   private final List<Statement> statements;
   
-  public OuterBlock(int length) {
-    super(0, length + 1);
+  public OuterBlock(LFunction function, int length) {
+    super(function, 0, length + 1);
     statements = new ArrayList<Statement>(length);
   }
 
@@ -42,7 +43,11 @@ public class OuterBlock extends Block {
   
   @Override
   public int scopeEnd() {
-    return end - 2;
+    if(function.header.version == 0x52) {
+      return end - 1;
+    } else {
+      return end - 2;
+    }
   }
   
   @Override
