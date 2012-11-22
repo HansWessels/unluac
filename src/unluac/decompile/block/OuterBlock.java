@@ -43,11 +43,7 @@ public class OuterBlock extends Block {
   
   @Override
   public int scopeEnd() {
-    if(function.header.version == 0x52) {
-      return end - 1;
-    } else {
-      return end - 2;
-    }
+    return (end - 1) + function.header.version.getOuterBlockScopeAdjustment();
   }
   
   @Override

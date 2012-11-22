@@ -1,31 +1,30 @@
 package unluac.decompile;
 
+import unluac.decompile.expression.ConstantExpression;
+import unluac.decompile.expression.GlobalExpression;
 import unluac.parse.LFunction;
-import unluac.parse.LObject;
 
 public class Function {
 
-  public final int numUpvalues;
-  public final int numParams;
-  public final int vararg;
-  public final int registers;
-  //public final Code code;
-  public final Constant[] constants;
-  
-  //private Declaration 
+  private Constant[] constants;
   
   public Function(LFunction function) {
-    numUpvalues = function.numUpvalues;
-    numParams = function.numParams;
-    vararg = function.vararg;
-    registers = function.maximumStackSize;
-    //code = new Code(function.code);
-    LObject[] bconstants = function.constants;
-    constants = new Constant[bconstants.length];
-    for(int index = 0; index < bconstants.length; index++) {
-      constants[index] = new Constant(bconstants[index]);
+    constants = new Constant[function.constants.length];
+    for(int i = 0; i < constants.length; i++) {
+      constants[i] = new Constant(function.constants[i]);
     }
-    
+  }
+  
+  public String getGlobalName(int constantIndex) {
+    return constants[constantIndex].asName();
+  }
+  
+  public ConstantExpression getConstantExpression(int constantIndex) {
+    return new ConstantExpression(constants[constantIndex], constantIndex);
+  }
+  
+  public GlobalExpression getGlobalExpression(int constantIndex) {
+    return new GlobalExpression(getGlobalName(constantIndex), constantIndex);
   }
   
 }

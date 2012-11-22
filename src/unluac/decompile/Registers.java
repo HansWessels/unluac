@@ -16,11 +16,11 @@ public class Registers {
   public final int length;
   
   private final Declaration[][] decls;
-  private final Constant[] constants;
+  private final Function f;
   private final Expression[][] values;
   private final int[][] updated;
   
-  public Registers(int registers, int length, Declaration[] declList, Constant[] constants) {
+  public Registers(int registers, int length, Declaration[] declList, Function f) {
     this.registers = registers;
     this.length = length;
     decls = new Declaration[registers][length + 1];
@@ -35,7 +35,6 @@ public class Registers {
         decls[register][line] = decl; 
       }
     }
-    this.constants = constants;
     values = new Expression[registers][length + 1];
     for(int register = 0; register < registers; register++) {
       values[register][0] = Expression.NIL;
@@ -43,6 +42,7 @@ public class Registers {
     updated = new int[registers][length + 1];
     startedLines = new boolean[length + 1];
     Arrays.fill(startedLines, false);
+    this.f = f;
   }
   
   public boolean isAssignable(int register, int line) {
@@ -94,7 +94,7 @@ public class Registers {
   
   public Expression getKExpression(int register, int line) {
     if((register & 0x100) != 0) {
-      return new ConstantExpression(constants[register & 0xFF], register & 0xFF);
+      return f.getConstantExpression(register & 0xFF);
     } else {
       return getExpression(register, line);
     }

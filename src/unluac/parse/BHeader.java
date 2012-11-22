@@ -3,6 +3,8 @@ package unluac.parse;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import unluac.Version;
+
 
 public class BHeader {
 
@@ -16,7 +18,8 @@ public class BHeader {
   
   public final boolean debug = false;
   
-  public final int version;
+  public final Version version;
+  
   public final BIntegerType integer;
   public final BSizeTType sizeT;
   public final LBooleanType bool;
@@ -35,14 +38,23 @@ public class BHeader {
       }
     }
     // 1 byte Lua version
-    version = 0xFF & buffer.get();
-    if(!(version == 0x51 || version == 0x52)) {
-      int major = version >> 4;
-      int minor = version & 0x0F;
-      throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.1.");
+    int versionNumber = 0xFF & buffer.get();
+    switch(versionNumber)
+    {
+      case 0x51:
+        version = Version.LUA51;
+        break;
+      case 0x52:
+        version = Version.LUA52;
+        break;
+      default: {
+        int major = versionNumber >> 4;
+        int minor = versionNumber & 0x0F;
+        throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.1 and Lua 5.2.");
+      }
     }
     if(debug) {
-      System.out.println("-- version: 0x" + Integer.toHexString(version));
+      System.out.println("-- version: 0x" + Integer.toHexString(versionNumber));
     }
     // 1 byte Lua "format"
     int format = 0xFF & buffer.get();
@@ -105,8 +117,8 @@ public class BHeader {
     constant = new LConstantType();
     local = new LLocalType();
     upvalue = new LUpvalueType();
-    function = new LFunctionType();
-    if(version == 0x52) {
+    function = version.getLFunctionType();
+    if(version.hasHeaderTail()) {
       for(int i = 0; i < luacTail.length; i++) {
         if(buffer.get() != luacTail[i]) {
           throw new IllegalStateException("The input file does not have the header tail of a valid Lua file.");

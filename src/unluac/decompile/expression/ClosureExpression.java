@@ -33,9 +33,11 @@ public class ClosureExpression extends Expression {
   
   @Override
   public boolean isUpvalueOf(int register) {
+    /*
     if(function.header.version == 0x51) {
       return false; //TODO:
     }
+    */
     for(int i = 0; i < function.upvalues.length; i++) {
       LUpvalue upvalue = function.upvalues[i];
       if(upvalue.instack && upvalue.idx == register) {

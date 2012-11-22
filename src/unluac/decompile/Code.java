@@ -28,7 +28,7 @@ public class Code {
   
   public Code(LFunction function) {
     this.code = function.code;
-    map = new OpcodeMap(function.header.version);
+    map = function.header.version.getOpcodeMap();
   }
   
   //public boolean reentered = false;

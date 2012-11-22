@@ -62,26 +62,23 @@ public class Decompiler {
   private final int registers;
   private final int length;
   public final Code code;
-  private final Constant[] constants;
   private final Upvalues upvalues;
   public final Declaration[] declList;
   
+  protected Function f;
   protected LFunction function;
   private final LFunction[] functions;  
   private final int params;
   private final int vararg;
   
-  private Op tforTarget = Op.TFORLOOP;
+  private final Op tforTarget;
   
   public Decompiler(LFunction function) {
+    this.f = new Function(function);
     this.function = function;
     registers = function.maximumStackSize;
     length = function.code.length;
     code = new Code(function);
-    constants = new Constant[function.constants.length];
-    for(int i = 0; i < constants.length; i++) {
-      constants[i] = new Constant(function.constants[i]);
-    }
     if(function.locals.length >= function.numParams) {
       declList = new Declaration[function.locals.length];
       for(int i = 0; i < declList.length; i++) {
@@ -98,16 +95,14 @@ public class Decompiler {
     functions = function.functions;
     params = function.numParams;
     vararg = function.vararg;
-    if(function.header.version == 0x52) {
-      tforTarget = Op.TFORCALL;
-    }
+    tforTarget = function.header.version.getTForTarget();
   }
   
   private Registers r;
   private Block outer;
   
   public void decompile() {
-    r = new Registers(registers, length, declList, constants);
+    r = new Registers(registers, length, declList, f);
     findReverseTargets();
     handleBranches(true);
     outer = handleBranches(false);
@@ -156,17 +151,17 @@ public class Decompiler {
         operations.add(new RegisterSet(line, A, r.getExpression(B, line)));
         break;
       case LOADK:
-        operations.add(new RegisterSet(line, A, new ConstantExpression(constants[Bx], Bx)));
+        operations.add(new RegisterSet(line, A, f.getConstantExpression(Bx)));
         break;
       case LOADBOOL:
         operations.add(new RegisterSet(line, A, new ConstantExpression(new Constant(B != 0 ? LBoolean.LTRUE : LBoolean.LFALSE), -1)));
         break;
       case LOADNIL: {
         int maximum;
-        if(function.header.version == 0x52) {
-          maximum = A + B;
-        } else {
+        if(function.header.version.usesOldLoadNilEncoding()) {
           maximum = B;
+        } else {
+          maximum = A + B;
         }
         while(A <= maximum) {
           operations.add(new RegisterSet(line, A, Expression.NIL));
@@ -179,13 +174,13 @@ public class Decompiler {
         break;
       case GETTABUP:
         if(B == 0 && (C & 0x100) != 0) {
-          operations.add(new RegisterSet(line, A, new GlobalExpression(constants[C & 0xFF].asName(), C & 0xFF))); //TODO: check
+          operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF))); //TODO: check
         } else {
           operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
         }
         break;
       case GETGLOBAL:
-        operations.add(new RegisterSet(line, A, new GlobalExpression(constants[Bx].asName(), Bx)));
+        operations.add(new RegisterSet(line, A, f.getGlobalExpression(Bx)));
         break;
       case GETTABLE:
         operations.add(new RegisterSet(line, A, new TableReference(r.getExpression(B, line), r.getKExpression(C, line))));
@@ -195,13 +190,13 @@ public class Decompiler {
         break;
       case SETTABUP:
         if(A == 0 && (B & 0x100) != 0) {
-          operations.add(new GlobalSet(line, constants[B & 0xFF].asName(), r.getKExpression(C, line))); //TODO: check
+          operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line))); //TODO: check
         } else {
           operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         }
         break;
       case SETGLOBAL:
-        operations.add(new GlobalSet(line, constants[Bx].asName(), r.getExpression(A, line)));
+        operations.add(new GlobalSet(line, f.getGlobalName(Bx), r.getExpression(A, line)));
         break;
       case SETTABLE:
         operations.add(new TableSet(line, r.getExpression(A, line), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
@@ -329,7 +324,7 @@ public class Decompiler {
       case CLOSURE: {
         LFunction f = functions[Bx];
         operations.add(new RegisterSet(line, A, new ClosureExpression(f, declList, line + 1)));
-        if(function.header.version == 0x51) {
+        if(function.header.version.usesInlineUpvalueDeclarations()) {
           // Skip upvalue declarations
           for(int i = 0; i < f.numUpvalues; i++) {
             skip[line + 1 + i] = true;
@@ -550,7 +545,7 @@ public class Decompiler {
       case SETUPVAL:
         return new UpvalueTarget(upvalues.getName(code.B(line)));
       case SETGLOBAL:
-        return new GlobalTarget(constants[code.Bx(line)].asName());
+        return new GlobalTarget(f.getGlobalName(code.Bx(line)));
       case SETTABLE:
         return new TableTarget(r.getExpression(code.A(line), previous), r.getKExpression(code.B(line), previous));
       default:
@@ -839,7 +834,7 @@ public class Decompiler {
               Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
               int loopback2 = tail + sbx;
-              if((op == Op.FORLOOP || op == Op.JMP || (op == Op.TFORLOOP && function.header.version == 0x52)) && loopback2 <= cond.begin) {
+              if(function.header.version.isBreakableLoopEnd(op) && loopback2 <= cond.begin) {
                 /* (ends with break) */
                 blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
