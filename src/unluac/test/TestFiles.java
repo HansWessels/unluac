@@ -84,6 +84,7 @@ public class TestFiles {
     "report01c",
     "report01d",
     "report01_full",
+    "report02",
     "report02a",
     "report02b"
   };

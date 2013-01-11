@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 import unluac.decompile.block.AlwaysLoop;
 import unluac.decompile.block.Block;
@@ -648,7 +649,6 @@ public class Decompiler {
             skip[line + 1] = true;            
             continue;
           case JMP: {
-            // System.err.println("JMP: " + line);
             reduce = true;
             int tline = line + 1 + code.sBx(line);
             if(tline >= 2 && code.op(tline - 1) == Op.LOADBOOL && code.C(tline - 1) != 0) {
@@ -802,9 +802,9 @@ public class Decompiler {
           Block enclosing = enclosingUnprotectedBlock(cond.begin);
           /* Checking enclosing unprotected block to undo JMP redirects. */
           if(enclosing != null) {
-            //System.out.println("loopback: " + enclosing.getLoopback());
-            //System.out.println("cond.end: " + cond.end);
-            //System.out.println("tail    : " + tail);
+            // System.out.println("loopback: " + enclosing.getLoopback());
+            // System.out.println("cond.end: " + cond.end);
+            // System.out.println("tail    : " + tail);
             if(enclosing.getLoopback() == cond.end) {
               cond.end = enclosing.end - 1;
               hasTail = cond.end >= 2 && code.op(cond.end - 1) == Op.JMP;
@@ -841,6 +841,7 @@ public class Decompiler {
                 blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
                 IfThenElseBlock ifthen = new IfThenElseBlock(function, cond, originalTail, r);
+                // System.err.println("else skip: " + (cond.end - 1));
                 skip[cond.end - 1] = true; //Skip the JMP over the else block
                 ElseEndBlock elseend = new ElseEndBlock(function, cond.end, tail);
                 blocks.add(ifthen);
@@ -881,6 +882,14 @@ public class Decompiler {
           //need for this one. But order of decls should fix this.
           blocks.add(new DoEndBlock(function, decl.begin, decl.end + 1));
         }
+      }
+    }
+    // Remove breaks that were later parsed as else jumps
+    ListIterator<Block> iter = blocks.listIterator();
+    while(iter.hasNext()) {
+      Block block = iter.next();
+      if(skip[block.begin] && block instanceof Break) {
+        iter.remove();
       }
     }
     Collections.sort(blocks);
