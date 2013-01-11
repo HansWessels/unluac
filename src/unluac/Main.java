@@ -15,7 +15,7 @@ import unluac.parse.LFunction;
 
 public class Main {
 
-  public static String version = "1.0";
+  public static String version = "1.1.0";
   
   public static void main(String[] args) {
     if(args.length == 0 || args.length > 1) {
@@ -40,6 +40,7 @@ public class Main {
       }
       Decompiler d = new Decompiler(lmain);
       d.decompile();
+      d.print();
       System.exit(0);
     }
   }

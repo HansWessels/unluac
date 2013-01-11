@@ -35,7 +35,6 @@ import unluac.decompile.expression.ClosureExpression;
 import unluac.decompile.expression.ConstantExpression;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.expression.FunctionCall;
-import unluac.decompile.expression.GlobalExpression;
 import unluac.decompile.expression.TableLiteral;
 import unluac.decompile.expression.TableReference;
 import unluac.decompile.expression.Vararg;
@@ -649,6 +648,7 @@ public class Decompiler {
             skip[line + 1] = true;            
             continue;
           case JMP: {
+            // System.err.println("JMP: " + line);
             reduce = true;
             int tline = line + 1 + code.sBx(line);
             if(tline >= 2 && code.op(tline - 1) == Op.LOADBOOL && code.C(tline - 1) != 0) {
@@ -830,7 +830,9 @@ public class Decompiler {
           } else if(cond.end < cond.begin) {
             blocks.add(new RepeatBlock(function, cond, r));
           } else if(hasTail) {
-            if(tail > cond.end) {
+            Op endOp = code.op(cond.end - 2);
+            boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET;
+            if(tail > cond.end || (tail == cond.end && !isEndCondJump)) {
               Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
               int loopback2 = tail + sbx;
