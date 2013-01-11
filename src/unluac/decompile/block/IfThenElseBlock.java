@@ -15,12 +15,14 @@ public class IfThenElseBlock extends Block {
   private final int loopback;
   private final Registers r;
   private final List<Statement> statements;
+  private final boolean emptyElse;
   public ElseEndBlock partner;
   
-  public IfThenElseBlock(LFunction function, Branch branch, int loopback, Registers r) {
+  public IfThenElseBlock(LFunction function, Branch branch, int loopback, boolean emptyElse, Registers r) {
     super(function, branch.begin, branch.end);
     this.branch = branch;
     this.loopback = loopback;
+    this.emptyElse = emptyElse;
     this.r = r;
     statements = new ArrayList<Statement>(branch.end - branch.begin + 1);
   }
@@ -82,6 +84,10 @@ public class IfThenElseBlock extends Block {
     }
     Statement.printSequence(out, statements);
     out.dedent();
+    if(emptyElse) {
+      out.println("else");
+      out.println("end");
+    }
   }
   
 }

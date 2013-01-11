@@ -840,12 +840,15 @@ public class Decompiler {
                 /* (ends with break) */
                 blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
-                IfThenElseBlock ifthen = new IfThenElseBlock(function, cond, originalTail, r);
-                // System.err.println("else skip: " + (cond.end - 1));
                 skip[cond.end - 1] = true; //Skip the JMP over the else block
-                ElseEndBlock elseend = new ElseEndBlock(function, cond.end, tail);
+                boolean emptyElse = tail == cond.end;
+                IfThenElseBlock ifthen = new IfThenElseBlock(function, cond, originalTail, emptyElse, r);
                 blocks.add(ifthen);
-                blocks.add(elseend);
+                
+                if(!emptyElse) {
+                  ElseEndBlock elseend = new ElseEndBlock(function, cond.end, tail);
+                  blocks.add(elseend);
+                }
               }
             } else {
               int loopback = tail;
@@ -992,11 +995,7 @@ public class Decompiler {
     return rtn;
   }
   
-  //TODO: temp
-  private static int count = 0;
-  
   private Branch _helper_popSetCondition(Stack<Branch> stack, boolean invert, int assignEnd) {
-    count++;
     Branch branch = stack.pop();
     int begin = branch.begin;
     int end = branch.end;

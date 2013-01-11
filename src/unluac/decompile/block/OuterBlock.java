@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unluac.decompile.Output;
+import unluac.decompile.statement.Return;
 import unluac.decompile.statement.Statement;
 import unluac.parse.LFunction;
 
@@ -49,7 +50,11 @@ public class OuterBlock extends Block {
   @Override
   public void print(Output out) {
     /* extra return statement */
-    statements.remove(statements.size() - 1);
+    int last = statements.size() - 1;
+    if(last < 0 || !(statements.get(last) instanceof Return)) {
+      throw new IllegalStateException(statements.get(last).toString());
+    }
+    statements.remove(last);
     Statement.printSequence(out, statements);
   }
   
