@@ -50,6 +50,11 @@ public class IfThenElseBlock extends Block {
   }
   
   @Override
+  public int scopeEnd() {
+    return end - 2;
+  }
+  
+  @Override
   public boolean isUnprotected() {
     return true;
   }
