@@ -787,7 +787,7 @@ public class Decompiler {
           boolean breakable = (breakTarget >= 1);
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
-            for(int iline = immediateEnclosing.end - 1; iline >= immediateEnclosing.begin; iline--) {
+            for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= immediateEnclosing.begin; iline--) {
               if(code.op(iline) == Op.JMP && iline + 1 + code.sBx(iline) == breakTarget) {
                 cond.end = iline;
                 break;
@@ -852,15 +852,21 @@ public class Decompiler {
               }
             } else {
               int loopback = tail;
+              boolean existsStatement = false;
+              for(int sl = loopback; sl < cond.begin; sl++) {
+                if(!skip[sl] && isStatement(sl)) {
+                  existsStatement = true;
+                  break;
+                }
+              }
               //TODO: check for 5.2-style if cond then break end
-              if(loopback >= cond.begin) {
-                skip[cond.end - 1] = true;
+              if(loopback >= cond.begin || existsStatement) {
                 blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
                 skip[cond.end - 1] = true;
                 blocks.add(new WhileBlock(function, cond, originalTail, r));
               }
-            }          
+            }
           } else {
             blocks.add(new IfThenEndBlock(function, cond, backup, r));
           }
