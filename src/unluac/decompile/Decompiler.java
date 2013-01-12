@@ -965,16 +965,20 @@ public class Decompiler {
   
   private static Stack<Branch> backup;
   
-  public static Branch popCondition(Stack<Branch> stack) {
+  public Branch popCondition(Stack<Branch> stack) {
     Branch branch = stack.pop();
     if(backup != null) backup.push(branch);
     if(branch instanceof TestSetNode) {
       throw new IllegalStateException();
     }
+    int begin = branch.begin;
+    if(code.op(branch.begin) == Op.JMP) {
+      begin += 1 + code.sBx(branch.begin);
+    }
     while(!stack.isEmpty()) {
       Branch next = stack.peek();
       if(next instanceof TestSetNode) break;
-      if(next.end == branch.begin) {
+      if(next.end == begin) {
         branch = new OrBranch(popCondition(stack).invert(), branch);
       } else if(next.end == branch.end) {
         branch = new AndBranch(popCondition(stack), branch);
