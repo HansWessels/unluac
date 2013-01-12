@@ -30,7 +30,7 @@ public class IfThenEndBlock extends Block {
   }
    
   public IfThenEndBlock(LFunction function, Branch branch, Stack<Branch> stack, Registers r) {
-    super(function, branch.begin, branch.end);
+    super(function, branch.begin == branch.end ? branch.begin - 1 : branch.begin, branch.begin == branch.end ? branch.begin - 1 : branch.end);
     this.branch = branch;
     this.stack = stack;
     this.r = r;
