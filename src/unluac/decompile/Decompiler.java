@@ -682,7 +682,13 @@ public class Decompiler {
                 if(tline > line) {
                   blocks.add(new Break(function, line, tline));
                 } else {
-                  blocks.add(new AlwaysLoop(function, tline, line + 1));
+                  Block enclosing = enclosingBlock(line);
+                  if(enclosing.breakable() && code.op(enclosing.end) == Op.JMP && code.sBx(enclosing.end) + enclosing.end + 1 == tline) {
+                    blocks.add(new Break(function, line, enclosing.end));
+                  } else {
+                    blocks.add(new AlwaysLoop(function, tline, line + 1));
+                  }
+                  
                 }
               }
             }
