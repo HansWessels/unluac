@@ -17,6 +17,11 @@ public class AlwaysLoop extends Block {
   }
   
   @Override
+  public int scopeEnd() {
+    return end - 2;
+  }
+  
+  @Override
   public boolean breakable() {
     return true;
   }
