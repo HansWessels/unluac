@@ -133,11 +133,19 @@ abstract public class Expression {
    */
   abstract public int getConstantIndex();
   
+  public boolean beginsWithParen() {
+    return false;
+  }
+  
   public boolean isNil() {
     return false;
   }
   
   public boolean isClosure() {
+    return false;
+  }
+  
+  public boolean isConstant() {
     return false;
   }
   

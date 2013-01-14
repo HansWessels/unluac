@@ -16,4 +16,9 @@ public class FunctionCallStatement extends Statement {
     call.print(out);
   }
   
+  @Override
+  public boolean beginsWithParen() {
+    return call.beginsWithParen();
+  }
+  
 }

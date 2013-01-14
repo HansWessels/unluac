@@ -13,17 +13,21 @@ abstract public class Statement {
    */
   public static void printSequence(Output out, List<Statement> stmts) {
     int n = stmts.size();
-    int i = 1;
-    for(Statement stmt : stmts) {
-      if(i == n) {
+    for(int i = 0; i < n; i++) {
+      boolean last = (i + 1 == n);
+      Statement stmt = stmts.get(i);
+      Statement next = last ? null : stmts.get(i + 1);
+      if(last) {
         stmt.printTail(out);
       } else {
         stmt.print(out);
       }
+      if(next != null && stmt instanceof FunctionCallStatement && next.beginsWithParen()) {
+        out.print(";");
+      }
       if(!(stmt instanceof IfThenElseBlock)) {
         out.println();
       }
-      i++;
     }
   }
     
@@ -37,6 +41,10 @@ abstract public class Statement {
   
   public void addComment(String comment) {
     this.comment = comment;
+  }
+  
+  public boolean beginsWithParen() {
+    return false;
   }
   
 }

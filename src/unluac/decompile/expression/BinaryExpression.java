@@ -23,9 +23,14 @@ public class BinaryExpression extends Expression {
   }
   
   @Override
+  public boolean beginsWithParen() {
+    return leftGroup() || left.beginsWithParen();
+  }
+  
+  @Override
   public void print(Output out) {
-    final boolean leftGroup = precedence > left.precedence || (precedence == left.precedence && associativity == ASSOCIATIVITY_RIGHT);
-    final boolean rightGroup = precedence > right.precedence || (precedence == right.precedence && associativity == ASSOCIATIVITY_LEFT);
+    final boolean leftGroup = leftGroup();
+    final boolean rightGroup = rightGroup();
     if(leftGroup) out.print("(");
     left.print(out);
     if(leftGroup) out.print(")");
@@ -35,6 +40,14 @@ public class BinaryExpression extends Expression {
     if(rightGroup) out.print("(");
     right.print(out);
     if(rightGroup) out.print(")");
+  }
+  
+  private boolean leftGroup() {
+    return precedence > left.precedence || (precedence == left.precedence && associativity == ASSOCIATIVITY_RIGHT);
+  }
+  
+  private boolean rightGroup() {
+    return precedence > right.precedence || (precedence == right.precedence && associativity == ASSOCIATIVITY_LEFT);
   }
   
 }

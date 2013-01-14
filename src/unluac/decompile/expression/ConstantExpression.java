@@ -24,6 +24,11 @@ public class ConstantExpression extends Expression {
   }
   
   @Override
+  public boolean isConstant() {
+    return true;
+  }
+  
+  @Override
   public boolean isNil() {
     return constant.isNil();
   }

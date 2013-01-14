@@ -42,18 +42,39 @@ public class FunctionCall extends Expression {
     }
   }
   
+  private boolean isMethodCall() {
+    return function.isMemberAccess() && arguments.length > 0 && function.getTable() == arguments[0];
+  }
+  
+  @Override
+  public boolean beginsWithParen() {
+    if(isMethodCall()) {
+      Expression obj = function.getTable();
+      return obj.isClosure() || obj.isConstant() || obj.beginsWithParen();
+    } else {
+      return function.isClosure() || function.isConstant() || function.beginsWithParen();
+    }
+  }
+  
   @Override
   public void print(Output out) {
     ArrayList<Expression> args = new ArrayList<Expression>(arguments.length);
-    if(function.isMemberAccess() && arguments.length > 0 && function.getTable() == arguments[0]) {
-      function.getTable().print(out);
+    if(isMethodCall()) {
+      Expression obj = function.getTable();
+      if(obj.isClosure() || obj.isConstant()) {
+        out.print("(");
+        obj.print(out);
+        out.print(")");
+      } else {
+        obj.print(out);
+      }
       out.print(":");
       out.print(function.getField());
       for(int i = 1; i < arguments.length; i++) {
         args.add(arguments[i]);
       }
     } else {
-      if(function.isClosure()) {
+      if(function.isClosure() || function.isConstant()) {
         out.print("(");
         function.print(out);
         out.print(")");
