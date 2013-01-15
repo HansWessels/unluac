@@ -80,6 +80,8 @@ public class TestFiles {
     "control05",
     "control06",
     "loop01",
+    "loop02",
+    "loop03",
     "method01",
     "inlinefunction01",
     "inlinefunction02",

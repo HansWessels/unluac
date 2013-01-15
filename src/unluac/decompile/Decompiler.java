@@ -581,6 +581,8 @@ public class Decompiler {
     blocks = new ArrayList<Block>();
     OuterBlock outer = new OuterBlock(function, length);
     blocks.add(outer);
+    boolean[] isBreak = new boolean[length + 1];
+    boolean[] loopRemoved = new boolean[length + 1];
     if(!first) {
       for(Block block : oldBlocks) {
         if(block instanceof AlwaysLoop) {
@@ -588,6 +590,7 @@ public class Decompiler {
         }
         if(block instanceof Break) {
           blocks.add(block);
+          isBreak[block.begin] = true;
         }
       }
       List<Block> delete = new LinkedList<Block>();
@@ -598,8 +601,10 @@ public class Decompiler {
               if(block.begin == block2.begin) {
                 if(block.end < block2.end) {
                   delete.add(block);
+                  loopRemoved[block.end - 1] = true;
                 } else {
                   delete.add(block2);
+                  loopRemoved[block2.end - 1] = true;
                 }
               }
             }
@@ -709,12 +714,14 @@ public class Decompiler {
                 }
               }
               */
-              if(first) {
+              if(first || loopRemoved[line]) {
                 if(tline > line) {
+                  isBreak[line] = true;
                   blocks.add(new Break(function, line, tline));
                 } else {
-                  Block enclosing = enclosingBlock(line);
-                  if(enclosing.breakable() && code.op(enclosing.end) == Op.JMP && code.sBx(enclosing.end) + enclosing.end + 1 == tline) {
+                  Block enclosing = enclosingBreakableBlock(line);
+                  if(enclosing != null && enclosing.breakable() && code.op(enclosing.end) == Op.JMP && code.sBx(enclosing.end) + enclosing.end + 1 == tline) {
+                    isBreak[line] = true;
                     blocks.add(new Break(function, line, enclosing.end));
                   } else {
                     blocks.add(new AlwaysLoop(function, tline, line + 1));
@@ -828,6 +835,9 @@ public class Decompiler {
           Stack<Branch> backup = backups.pop();
           int breakTarget = breakTarget(cond.begin);
           boolean breakable = (breakTarget >= 1);
+          if(breakable && code.op(breakTarget) == Op.JMP) {
+            breakTarget += 1 + code.sBx(breakTarget);
+          }
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
             for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
@@ -845,9 +855,9 @@ public class Decompiler {
           Block enclosing = enclosingUnprotectedBlock(cond.begin);
           /* Checking enclosing unprotected block to undo JMP redirects. */
           if(enclosing != null) {
-            //System.out.println("loopback: " + enclosing.getLoopback());
-            //System.out.println("cond.end: " + cond.end);
-            //System.out.println("tail    : " + tail);
+            //System.err.println("loopback: " + enclosing.getLoopback());
+            //System.err.println("cond.end: " + cond.end);
+            //System.err.println("tail    : " + tail);
             if(enclosing.getLoopback() == cond.end) {
               cond.end = enclosing.end - 1;
               hasTail = cond.end >= 2 && code.op(cond.end - 1) == Op.JMP;
@@ -879,7 +889,8 @@ public class Decompiler {
               Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
               int loopback2 = tail + sbx;
-              if(function.header.version.isBreakableLoopEnd(op) && loopback2 <= cond.begin) {
+              boolean isBreakableLoopEnd = function.header.version.isBreakableLoopEnd(op);
+              if(isBreakableLoopEnd && loopback2 <= cond.begin && !isBreak[tail - 1]) {
                 /* (ends with break) */
                 blocks.add(new IfThenEndBlock(function, cond, backup, r));
               } else {
@@ -985,6 +996,18 @@ public class Decompiler {
       }
     }
     return enclosing;
+  }
+  
+  private Block enclosingBreakableBlock(int line) {
+    Block outer = blocks.get(0);
+    Block enclosing = outer;
+    for(int i = 1; i < blocks.size(); i++) {
+      Block next = blocks.get(i);
+      if(enclosing.contains(next) && next.contains(line) && next.breakable() && !next.loopRedirectAdjustment) {
+        enclosing = next;
+      }
+    }
+    return enclosing == outer ? null : enclosing;
   }
   
   private Block enclosingUnprotectedBlock(int line) {
