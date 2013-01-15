@@ -811,7 +811,7 @@ public class Decompiler {
           boolean breakable = (breakTarget >= 1);
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
-            for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= immediateEnclosing.begin; iline--) {
+            for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
               if(code.op(iline) == Op.JMP && iline + 1 + code.sBx(iline) == breakTarget) {
                 cond.end = iline;
                 break;
@@ -826,9 +826,9 @@ public class Decompiler {
           Block enclosing = enclosingUnprotectedBlock(cond.begin);
           /* Checking enclosing unprotected block to undo JMP redirects. */
           if(enclosing != null) {
-            // System.out.println("loopback: " + enclosing.getLoopback());
-            // System.out.println("cond.end: " + cond.end);
-            // System.out.println("tail    : " + tail);
+            //System.out.println("loopback: " + enclosing.getLoopback());
+            //System.out.println("cond.end: " + cond.end);
+            //System.out.println("tail    : " + tail);
             if(enclosing.getLoopback() == cond.end) {
               cond.end = enclosing.end - 1;
               hasTail = cond.end >= 2 && code.op(cond.end - 1) == Op.JMP;
