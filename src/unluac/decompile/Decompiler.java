@@ -590,6 +590,25 @@ public class Decompiler {
           blocks.add(block);
         }
       }
+      List<Block> delete = new LinkedList<Block>();
+      for(Block block : blocks) {
+        if(block instanceof AlwaysLoop) {
+          for(Block block2 : blocks) {
+            if(block != block2) {
+              if(block.begin == block2.begin) {
+                if(block.end < block2.end) {
+                  delete.add(block);
+                } else {
+                  delete.add(block2);
+                }
+              }
+            }
+          }
+        }
+      }
+      for(Block block : delete) {
+        blocks.remove(block);
+      }
     }
     skip = new boolean[length + 1];
     Stack<Branch> stack = new Stack<Branch>();
