@@ -114,13 +114,7 @@ public class SetBlock extends Block {
               break;
             }
           }
-          if(expr != null && target >= 0) {
-            branch.useExpression(expr);
-            r.setValue(target, branch.end - 1, branch.asExpression(r));
-            //System.out.println("-- target = " + target + "@" + (branch.end - 1));
-            //.print(new Output());
-            //System.out.println();
-          } else if(d.code.op(branch.end - 2) == Op.LOADBOOL && d.code.C(branch.end - 2) != 0) {
+          if(d.code.op(branch.end - 2) == Op.LOADBOOL && d.code.C(branch.end - 2) != 0) {
             int target = d.code.A(branch.end - 2);
             if(d.code.op(branch.end - 3) == Op.JMP && d.code.sBx(branch.end - 3) == 2) {
               //System.out.println("-- Dropped boolean expression operand");
@@ -133,7 +127,15 @@ public class SetBlock extends Block {
               return new Assignment(r.getTarget(target, branch.end - 1), branch.asExpression(r));
             }
             r.setValue(target, branch.end - 1, branch.asExpression(r));
-            
+          } else if(expr != null && target >= 0) {
+            branch.useExpression(expr);
+            if(r.isLocal(target, branch.end - 1)) {
+              return new Assignment(r.getTarget(target, branch.end - 1), branch.asExpression(r));
+            }
+            r.setValue(target, branch.end - 1, branch.asExpression(r));
+            //System.out.println("-- target = " + target + "@" + (branch.end - 1));
+            //.print(new Output());
+            //System.out.println();
           } else {
             System.out.println("-- fail " + (branch.end - 1));
             System.out.println(expr);

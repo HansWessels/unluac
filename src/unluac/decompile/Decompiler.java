@@ -599,45 +599,57 @@ public class Decompiler {
     for(int line = 1; line <= length; line++) {
       if(!skip[line]) {
         switch(code.op(line)) {
-          case EQ:
-            stack.push(new EQNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+          case EQ: {
+            EQNode node = new EQNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)); 
+            stack.push(node);
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == Op.LOADBOOL) {
-              if(code.C(stack.peek().end) != 0) {
-                stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
-                if(code.C(stack.peek().end - 1) != 0) {
-                  stack.peek().isCompareSet = true;
+            if(code.op(node.end) == Op.LOADBOOL) {
+              if(code.C(node.end) != 0) {
+                node.isCompareSet = true;
+                node.setTarget = code.A(node.end);
+              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+                if(code.C(node.end - 1) != 0) {
+                  node.isCompareSet = true;
+                  node.setTarget = code.A(node.end);
                 }
               }
             }
             continue;
-          case LT:
-            stack.push(new LTNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+          }
+          case LT: {
+            LTNode node = new LTNode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)); 
+            stack.push(node);
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == Op.LOADBOOL) {
-              if(code.C(stack.peek().end) != 0) {
-                stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
-                if(code.C(stack.peek().end - 1) != 0) {
-                  stack.peek().isCompareSet = true;
+            if(code.op(node.end) == Op.LOADBOOL) {
+              if(code.C(node.end) != 0) {
+                node.isCompareSet = true;
+                node.setTarget = code.A(node.end);
+              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+                if(code.C(node.end - 1) != 0) {
+                  node.isCompareSet = true;
+                  node.setTarget = code.A(node.end);
                 }
               }
             }
             continue;
-          case LE:
-            stack.push(new LENode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+          }
+          case LE: {
+            LENode node = new LENode(code.B(line), code.C(line), code.A(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1));
+            stack.push(node);
             skip[line + 1] = true;
-            if(code.op(stack.peek().end) == Op.LOADBOOL) {
-              if(code.C(stack.peek().end) != 0) {
-                stack.peek().isCompareSet = true;
-              } else if(code.op(stack.peek().end - 1) == Op.LOADBOOL) {
-                if(code.C(stack.peek().end - 1) != 0) {
-                  stack.peek().isCompareSet = true;
+            if(code.op(node.end) == Op.LOADBOOL) {
+              if(code.C(node.end) != 0) {
+                node.isCompareSet = true;
+                node.setTarget = code.A(node.end);
+              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+                if(code.C(node.end - 1) != 0) {
+                  node.isCompareSet = true;
+                  node.setTarget = code.A(node.end);
                 }
               }
             }
             continue;
+          }
           case TEST:
             stack.push(new TestNode(code.A(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;
@@ -740,6 +752,7 @@ public class Decompiler {
             }
             //System.exit(0);
           } else if(stack.peek().isCompareSet) {
+            //System.err.println("c" + stack.peek().setTarget); 
             if(code.op(stack.peek().begin) != Op.LOADBOOL || code.C(stack.peek().begin) == 0) {
               isAssignNode = true;
               if(code.C(assignEnd) != 0) {
@@ -755,6 +768,11 @@ public class Decompiler {
               if(node.test == code.A(assignEnd - 2)) {
                 isAssignNode = true;
               }
+            }
+          } else if(assignEnd - 2 >= 1 && code.op(assignEnd - 1) == Op.LOADBOOL && code.C(assignEnd - 1) != 0 && code.op(assignEnd - 2) == Op.JMP && code.sBx(assignEnd - 2) == 2) {
+            if(stack.peek() instanceof TestNode) {
+              isAssignNode = true;
+              assignEnd += 1;
             }
           } else if(assignEnd - 1 >= 1 && r.isLocal(getAssignment(assignEnd - 1), assignEnd - 1) && assignEnd > stack.peek().line) {
             Declaration decl = r.getDeclaration(getAssignment(assignEnd - 1), assignEnd - 1);
