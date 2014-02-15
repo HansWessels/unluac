@@ -800,6 +800,11 @@ public class Decompiler {
               isAssignNode = true;
               assignEnd += 1;
             }
+          } else if(assignEnd - 1 >= 1 && code.op(assignEnd) == Op.LOADBOOL && code.C(assignEnd) != 0 && code.op(assignEnd - 1) == Op.JMP && code.sBx(assignEnd - 1) == 2) {
+            if(stack.peek() instanceof TestNode) {
+              isAssignNode = true;
+              assignEnd += 2;
+            }
           } else if(assignEnd - 1 >= 1 && r.isLocal(getAssignment(assignEnd - 1), assignEnd - 1) && assignEnd > stack.peek().line) {
             Declaration decl = r.getDeclaration(getAssignment(assignEnd - 1), assignEnd - 1);
             if(decl.begin == assignEnd - 1 && decl.end > assignEnd - 1) {
