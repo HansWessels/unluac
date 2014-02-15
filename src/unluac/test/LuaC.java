@@ -7,8 +7,13 @@ import java.io.InputStreamReader;
 public class LuaC {
 
   public static void compile(String in, String out) throws IOException {
-    ProcessBuilder pb = new ProcessBuilder("luac", "-o", out, in);
-    //ProcessBuilder pb = new ProcessBuilder("C:\\LuaTest\\bin\\luac515_single.exe", "-o", out, in);
+    String luac;
+    if(System.getProperty("os.name").contains("Windows")) {
+      luac = "luac.exe";
+    } else {
+      luac = "luac";
+    }
+    ProcessBuilder pb = new ProcessBuilder(luac, "-o", out, in);
     pb.directory(null);
     Process p = pb.start();
     while(true) {
