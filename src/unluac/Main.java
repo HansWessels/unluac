@@ -15,7 +15,7 @@ import unluac.parse.LFunction;
 
 public class Main {
 
-  public static String version = "1.2.0";
+  public static String version = "1.2.1";
   
   public static void main(String[] args) {
     if(args.length == 0 || args.length > 1) {
