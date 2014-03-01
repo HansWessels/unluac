@@ -94,7 +94,7 @@ public class Constant {
           newlines += string.charAt(i) == '\n' ? 1 : 0;
           carriageReturns += string.charAt(i) == '\r' ? 1 : 0;
         }
-        if(carriageReturns == 0 && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
+        if(carriageReturns == 0 && !string.contains("[[") && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
           int pipe = 0;
           String pipeString = "]]";
           while(string.indexOf(pipeString) >= 0) {
