@@ -89,14 +89,16 @@ public class Constant {
         break;
       case 3:
         int newlines = 0;
-        int carriageReturns = 0;
         int unprintable = 0;
         for(int i = 0; i < string.length(); i++) {
-          newlines += string.charAt(i) == '\n' ? 1 : 0;
-          carriageReturns += string.charAt(i) == '\r' ? 1 : 0;
-          unprintable += string.charAt(i) <= 31 || string.charAt(i) >= 127 ? 1 : 0;
+          char c = string.charAt(i);
+          if(c == '\n') {
+            newlines++;
+          } else if((c <= 31 && c != '\t') || c >= 127) {
+            unprintable++;
+          }
         }
-        if(carriageReturns == 0 && unprintable == 0 && !string.contains("[[") && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
+        if(unprintable == 0 && !string.contains("[[") && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
           int pipe = 0;
           String pipeString = "]]";
           while(string.indexOf(pipeString) >= 0) {
