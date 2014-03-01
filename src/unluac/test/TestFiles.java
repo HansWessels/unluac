@@ -88,6 +88,7 @@ public class TestFiles {
     "inlinefunction02",
     "inlineconstant01",
     "string01",
+    "string02",
     "report01a",
     "report01b",
     "report01c",
