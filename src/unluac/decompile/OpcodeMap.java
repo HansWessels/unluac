@@ -5,7 +5,44 @@ public class OpcodeMap {
   private Op[] map;
   
   public OpcodeMap(int version) {
-    if(version == 0x51) {
+    if(version == 0x50) {
+      map = new Op[35];
+      map[0] = Op.MOVE;
+      map[1] = Op.LOADK;
+      map[2] = Op.LOADBOOL;
+      map[3] = Op.LOADNIL;
+      map[4] = Op.GETUPVAL;
+      map[5] = Op.GETGLOBAL;
+      map[6] = Op.GETTABLE;
+      map[7] = Op.SETGLOBAL;
+      map[8] = Op.SETUPVAL;
+      map[9] = Op.SETTABLE;
+      map[10] = Op.NEWTABLE;
+      map[11] = Op.SELF;
+      map[12] = Op.ADD;
+      map[13] = Op.SUB;
+      map[14] = Op.MUL;
+      map[15] = Op.DIV;
+      map[16] = Op.POW;
+      map[17] = Op.UNM;
+      map[18] = Op.NOT;
+      map[19] = Op.CONCAT;
+      map[20] = Op.JMP;
+      map[21] = Op.EQ;
+      map[22] = Op.LT;
+      map[23] = Op.LE;
+      map[24] = Op.TEST50;
+      map[25] = Op.CALL;
+      map[26] = Op.TAILCALL;
+      map[27] = Op.RETURN;
+      map[28] = Op.FORLOOP;
+      map[29] = Op.TFORLOOP;
+      map[30] = Op.TFORPREP;
+      map[31] = Op.SETLIST;
+      map[32] = Op.SETLISTO;
+      map[33] = Op.CLOSE;
+      map[34] = Op.CLOSURE;
+    } else if(version == 0x51) {
       map = new Op[38];
       map[0] = Op.MOVE;
       map[1] = Op.LOADK;
