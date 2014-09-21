@@ -305,6 +305,15 @@ public class Decompiler {
       case TFORLOOP:
         /* Do nothing ... handled with branches */
         break;
+      case SETLIST50:
+      case SETLISTO: {
+        Expression table = r.getValue(A, line);
+        int n = Bx % 32;
+        for(int i = 1; i <= n + 1; i++) {
+          operations.add(new TableSet(line, table, new ConstantExpression(new Constant(Bx - n + i), -1), r.getExpression(A + i, line), false, r.getUpdated(A + i, line)));
+        }
+        break;
+      }
       case SETLIST: {
         if(C == 0) {
           C = code.codepoint(line + 1);
@@ -1220,6 +1229,8 @@ public class Decompiler {
       case TEST:
       case TESTSET:
       case SETLIST:
+      case SETLISTO:
+      case SETLIST50:
         return false;
       case CALL: {
         int a = code.A(line);
@@ -1304,6 +1315,8 @@ public class Decompiler {
       case TEST:
       case TESTSET:
       case SETLIST:
+      case SETLIST50:
+      case SETLISTO:
         return -1;
       case CALL: {
         if(code.C(line) == 2) {

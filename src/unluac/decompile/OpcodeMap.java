@@ -38,7 +38,7 @@ public class OpcodeMap {
       map[28] = Op.FORLOOP;
       map[29] = Op.TFORLOOP;
       map[30] = Op.TFORPREP;
-      map[31] = Op.SETLIST;
+      map[31] = Op.SETLIST50;
       map[32] = Op.SETLISTO;
       map[33] = Op.CLOSE;
       map[34] = Op.CLOSURE;

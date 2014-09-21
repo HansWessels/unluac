@@ -46,7 +46,8 @@ public enum Op {
   SETTABUP(OpcodeFormat.A_B_C),
   TFORCALL(OpcodeFormat.A_C),
   EXTRAARG(OpcodeFormat.Ax),
-  // Lua 5.2 Opcodes
+  // Lua 5.0 Opcodes
+  SETLIST50(OpcodeFormat.A_B_C),
   SETLISTO(OpcodeFormat.A_Bx),
   TFORPREP(OpcodeFormat.A_sBx),
   TEST50(OpcodeFormat.A_B_C);
