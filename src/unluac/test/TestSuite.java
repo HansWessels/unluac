@@ -53,4 +53,29 @@ public class TestSuite {
     }
   }
   
+  public boolean run(String file) throws IOException {
+    int passed = 0;
+    int failed = 0;
+    File working = new File(working_dir);
+    if(!working.exists()) {
+      working.mkdir();
+    }
+    {
+      String name = file;
+      if(test(path + name + ext)) {
+        System.out.println("Passed: " + name);
+        passed++;
+      } else {
+        System.out.println("Failed: " + name);
+        failed++;
+      }
+    }
+    if(failed == 0) {
+      System.out.println("All tests passed!");
+      return true;
+    } else {
+      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests.");
+      return false;
+    }
+  }
 }
