@@ -33,6 +33,8 @@ public abstract class Version {
   public abstract boolean usesInlineUpvalueDeclarations();
   
   public abstract Op getTForTarget();
+
+  public abstract Op getForTarget();
   
   public abstract boolean isBreakableLoopEnd(Op op);
   
@@ -77,6 +79,11 @@ class Version50 extends Version {
   @Override
   public Op getTForTarget() {
     return Op.TFORLOOP;
+  }
+
+  @Override
+  public Op getForTarget() {
+    return Op.FORLOOP;
   }
 
   @Override
@@ -128,6 +135,11 @@ class Version51 extends Version {
   }
   
   @Override
+  public Op getForTarget() {
+    return null;
+  }
+
+  @Override
   public boolean isBreakableLoopEnd(Op op) {
     return op == Op.JMP || op == Op.FORLOOP;
   }
@@ -174,7 +186,12 @@ class Version52 extends Version {
   public Op getTForTarget() {
     return Op.TFORCALL;
   }
-  
+
+  @Override
+  public Op getForTarget() {
+    return null;
+  }
+
   @Override
   public boolean isBreakableLoopEnd(Op op) {
     return op == Op.JMP || op == Op.FORLOOP || op == Op.TFORLOOP;

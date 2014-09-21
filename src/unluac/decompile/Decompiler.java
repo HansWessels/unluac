@@ -73,6 +73,7 @@ public class Decompiler {
   private final int vararg;
   
   private final Op tforTarget;
+  private final Op forTarget;
   
   public Decompiler(LFunction function) {
     this.f = new Function(function);
@@ -97,6 +98,7 @@ public class Decompiler {
     params = function.numParams;
     vararg = function.vararg;
     tforTarget = function.header.version.getTForTarget();
+    forTarget = function.header.version.getForTarget();
   }
   
   private Registers r;
@@ -724,6 +726,14 @@ public class Decompiler {
               skip[tline] = true;
               skip[tline + 1] = true;
               blocks.add(new TForBlock(function, line + 1, tline + 2, A, C, r));
+            } else if(code.op(tline) == forTarget && !skip[tline]) {
+              int A = code.A(tline);
+              r.setInternalLoopVariable(A, tline, line + 1); //TODO: end?
+              r.setInternalLoopVariable(A + 1, tline, line + 1);
+              r.setInternalLoopVariable(A + 2, tline, line + 1);
+              skip[tline] = true;
+              skip[tline+1] = true;
+              blocks.add(new ForBlock(function, line + 1, tline + 1, A, r));
             } else if(code.sBx(line) == 2 && code.op(line + 1) == Op.LOADBOOL && code.C(line + 1) != 0) {
               /* This is the tail of a boolean set with a compare node and assign node */
               blocks.add(new BooleanIndicator(function, line));
