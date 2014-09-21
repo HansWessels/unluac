@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import unluac.Version;
+import unluac.decompile.Code;
+import unluac.decompile.Code50;
+import unluac.decompile.CodeExtract;
 
 
 public class BHeader {
@@ -29,6 +32,7 @@ public class BHeader {
   public final LLocalType local;
   public final LUpvalueType upvalue;
   public final LFunctionType function;
+  public final CodeExtract extractor;
   
   public BHeader(ByteBuffer buffer) {
     // 4 byte Lua signature
@@ -109,6 +113,9 @@ public class BHeader {
       int sizeA = 0xFF & buffer.get();
       int sizeB = 0xFF & buffer.get();
       int sizeC = 0xFF & buffer.get();
+      extractor = new Code50(sizeOp, sizeA, sizeB, sizeC);
+    } else {
+      extractor = Code.Code51;
     }
     int lNumberSize = 0xFF & buffer.get();
     if(debug) {
