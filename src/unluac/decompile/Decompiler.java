@@ -253,6 +253,7 @@ public class Decompiler {
       case LE:
       case TEST:
       case TESTSET:
+      case TEST50:
         /* Do nothing ... handled with branches */
         break;
       case CALL: {
@@ -693,6 +694,16 @@ public class Decompiler {
             stack.push(new TestSetNode(code.A(line), code.B(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;            
             continue;
+          case TEST50:
+            if(code.A(line) == code.B(line)) {
+              stack.push(new TestNode(code.A(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+            } else {
+              testset = true;
+              testsetend = line + 2 + code.sBx(line + 1);
+              stack.push(new TestSetNode( code.A(line), code.B(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+            }
+            skip[line + 1] = true;
+            continue;
           case JMP: {
             reduce = true;
             int tline = line + 1 + code.sBx(line);
@@ -898,7 +909,7 @@ public class Decompiler {
             blocks.add(new RepeatBlock(function, cond, r));
           } else if(hasTail) {
             Op endOp = code.op(cond.end - 2);
-            boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET;
+            boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET || endOp == Op.TEST50;
             if(tail > cond.end || (tail == cond.end && !isEndCondJump)) {
               Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
@@ -1228,6 +1239,7 @@ public class Decompiler {
       case LE:
       case TEST:
       case TESTSET:
+      case TEST50:
       case SETLIST:
       case SETLISTO:
       case SETLIST50:
