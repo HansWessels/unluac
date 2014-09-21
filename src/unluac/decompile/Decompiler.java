@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import unluac.Version;
 import unluac.decompile.block.AlwaysLoop;
 import unluac.decompile.block.Block;
 import unluac.decompile.block.BooleanIndicator;
@@ -726,6 +727,10 @@ public class Decompiler {
             } else if(code.sBx(line) == 2 && code.op(line + 1) == Op.LOADBOOL && code.C(line + 1) != 0) {
               /* This is the tail of a boolean set with a compare node and assign node */
               blocks.add(new BooleanIndicator(function, line));
+            } else if(code.op(tline) == Op.JMP && code.sBx(tline) + tline == line) {
+              if(first)
+                blocks.add(new AlwaysLoop(function, line, tline+1));
+              skip[tline] = true;
             } else {
               /*
               for(Block block : blocks) {
@@ -734,7 +739,7 @@ public class Decompiler {
                 }
               }
               */
-              if(first || loopRemoved[line]) {
+              if(first || loopRemoved[line] || reverseTarget[line+1]) {
                 if(tline > line) {
                   isBreak[line] = true;
                   blocks.add(new Break(function, line, tline));
@@ -860,7 +865,7 @@ public class Decompiler {
           Stack<Branch> backup = backups.pop();
           int breakTarget = breakTarget(cond.begin);
           boolean breakable = (breakTarget >= 1);
-          if(breakable && code.op(breakTarget) == Op.JMP) {
+          if(breakable && code.op(breakTarget) == Op.JMP && function.header.version != Version.LUA50) {
             breakTarget += 1 + code.sBx(breakTarget);
           }
           if(breakable && breakTarget == cond.end) {
@@ -906,7 +911,12 @@ public class Decompiler {
             }
             blocks.add(new CompareBlock(function, begin, begin + 2, target, cond));
           } else if(cond.end < cond.begin) {
-            blocks.add(new RepeatBlock(function, cond, r));
+            if(isBreak[cond.end - 1]) {
+              skip[cond.end - 1] = true;
+              blocks.add(new WhileBlock(function, cond.invert(), originalTail, r));
+            } else {
+              blocks.add(new RepeatBlock(function, cond, r));
+            }
           } else if(hasTail) {
             Op endOp = code.op(cond.end - 2);
             boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET || endOp == Op.TEST50;
