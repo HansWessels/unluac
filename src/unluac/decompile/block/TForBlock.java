@@ -3,6 +3,7 @@ package unluac.decompile.block;
 import java.util.ArrayList;
 import java.util.List;
 
+import unluac.Version;
 import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.expression.Expression;
@@ -57,10 +58,18 @@ public class TForBlock extends Block {
   @Override
   public void print(Output out) {
     out.print("for ");
-    r.getTarget(register + 3, begin - 1).print(out);
-    for(int r1 = register + 4; r1 <= register + 2 + length; r1++) {
-      out.print(", ");
-      r.getTarget(r1, begin - 1).print(out);
+    if(function.header.version == Version.LUA50) {
+      r.getTarget(register + 2, begin - 1).print(out);
+      for(int r1 = register + 3; r1 <= register + 2 + length; r1++) {
+        out.print(", ");
+        r.getTarget(r1, begin - 1).print(out);
+      }
+    } else {
+      r.getTarget(register + 3, begin - 1).print(out);
+      for(int r1 = register + 4; r1 <= register + 2 + length; r1++) {
+        out.print(", ");
+        r.getTarget(r1, begin - 1).print(out);
+      }
     }    
     out.print(" in ");
     Expression value;

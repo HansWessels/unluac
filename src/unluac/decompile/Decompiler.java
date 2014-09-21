@@ -305,6 +305,7 @@ public class Decompiler {
       }
       case FORLOOP:
       case FORPREP:
+      case TFORPREP:
       case TFORCALL:
       case TFORLOOP:
         /* Do nothing ... handled with branches */
@@ -482,6 +483,9 @@ public class Decompiler {
           if(count > 0) {
             block.addStatement(assign);
           }
+        } else if(code.op(line) == Op.TFORPREP) {
+          // Lua5.0 FORPREP - no assignments
+          newLocals.clear();
         } else {
           //System.out.println("-- Process iterating ... ");
           for(Operation operation : operations) {
@@ -779,6 +783,22 @@ public class Decompiler {
           case FORLOOP:
             /* Should be skipped by preceding FORPREP */
             throw new IllegalStateException();
+          case TFORPREP: {
+            reduce = true;
+            int tline = line + 1 + code.sBx(line);
+            int A = code.A(tline);
+            int C = code.C(tline);
+            r.setInternalLoopVariable(A, tline, line + 1); // TODO: end?
+            r.setInternalLoopVariable(A + 1, tline, line + 1);
+            r.setInternalLoopVariable(A + 2, tline, line + 1);
+            for(int index = 1; index <= C; index++) {
+              r.setExplicitLoopVariable(A + 2 + index, line, tline + 2); // TODO: end?
+            }
+            skip[tline] = true;
+            skip[tline + 1] = true;
+            blocks.add(new TForBlock(function, line + 1, tline + 2, A, C, r));
+            break;
+          }
           default:
             reduce = isStatement(line);
             break;
@@ -1248,6 +1268,7 @@ public class Decompiler {
       case RETURN:
       case FORLOOP:
       case FORPREP:
+      case TFORPREP:
       case TFORCALL:
       case TFORLOOP:
       case CLOSE:
