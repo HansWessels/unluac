@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 public class LFunctionType extends BObjectType<LFunction> {
   
+  public static final LFunctionType TYPE50 = new LFunctionType50();
   public static final LFunctionType TYPE51 = new LFunctionType();
   public static final LFunctionType TYPE52 = new LFunctionType52();
   
@@ -124,6 +125,39 @@ class LFunctionType52 extends LFunctionType {
     super.parse_debug(buffer, header, s);
   }
   
+  protected void parse_upvalues(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
+    BList<LUpvalue> upvalues = header.upvalue.parseList(buffer, header);
+    s.lenUpvalues = upvalues.length.asInt();
+    s.upvalues = upvalues.asArray(new LUpvalue[s.lenUpvalues]);
+  }
+}
+
+class LFunctionType50 extends LFunctionType {
+
+  @Override
+  protected void parse_main(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
+    s.name = header.string.parse(buffer, header);
+    s.lineBegin = header.integer.parse(buffer, header).asInt();
+    s.lineEnd = 0;
+    int lenUpvalues = 0xFF & buffer.get();
+    s.upvalues = new LUpvalue[lenUpvalues];
+    for(int i = 0; i < lenUpvalues; i++) {
+      s.upvalues[i] = new LUpvalue();
+    }
+    s.lenParameter = 0xFF & buffer.get();
+    s.vararg = 0xFF & buffer.get();
+    s.maximumStackSize = 0xFF & buffer.get();
+    parse_debug(buffer, header, s);
+    parse_constants(buffer, header, s);
+    parse_code(buffer, header, s);
+  }
+
+  @Override
+  protected void parse_debug(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
+    super.parse_debug(buffer, header, s);
+  }
+
+  @Override
   protected void parse_upvalues(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
     BList<LUpvalue> upvalues = header.upvalue.parseList(buffer, header);
     s.lenUpvalues = upvalues.length.asInt();

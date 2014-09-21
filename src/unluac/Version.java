@@ -6,6 +6,7 @@ import unluac.parse.LFunctionType;
 
 public abstract class Version {
 
+  public static final Version LUA50 = new Version50();
   public static final Version LUA51 = new Version51();
   public static final Version LUA52 = new Version52();
   
@@ -17,6 +18,8 @@ public abstract class Version {
   
   public abstract boolean hasHeaderTail();
   
+  public abstract boolean hasFormat();
+
   public abstract LFunctionType getLFunctionType();
   
   public OpcodeMap getOpcodeMap() {
@@ -35,6 +38,54 @@ public abstract class Version {
   
 }
 
+class Version50 extends Version {
+
+  Version50() {
+    super(0x50);
+  }
+
+  @Override
+  public boolean hasHeaderTail() {
+    return false;
+  }
+
+  @Override
+  public boolean hasFormat() {
+    return false;
+  }
+
+  @Override
+  public LFunctionType getLFunctionType() {
+    return LFunctionType.TYPE50;
+  }
+
+  @Override
+  public int getOuterBlockScopeAdjustment() {
+    return -1;
+  }
+
+  @Override
+  public boolean usesOldLoadNilEncoding() {
+    return true;
+  }
+
+  @Override
+  public boolean usesInlineUpvalueDeclarations() {
+    return true;
+  }
+
+  @Override
+  public Op getTForTarget() {
+    return Op.TFORLOOP;
+  }
+
+  @Override
+  public boolean isBreakableLoopEnd(Op op) {
+    return op == Op.JMP || op == Op.FORLOOP;
+  }
+
+}
+
 class Version51 extends Version {
   
   Version51() {
@@ -46,6 +97,11 @@ class Version51 extends Version {
     return false;
   }
   
+  @Override
+  public boolean hasFormat() {
+    return true;
+  }
+
   @Override
   public LFunctionType getLFunctionType() {
     return LFunctionType.TYPE51;
@@ -89,6 +145,11 @@ class Version52 extends Version {
     return true;
   }
   
+  @Override
+  public boolean hasFormat() {
+    return true;
+  }
+
   @Override
   public LFunctionType getLFunctionType() {
     return LFunctionType.TYPE52;
