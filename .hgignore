@@ -1,0 +1,6 @@
+syntax: glob
+.gradle
+bin
+build
+luac
+test/working
