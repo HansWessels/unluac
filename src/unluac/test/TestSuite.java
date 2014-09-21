@@ -21,40 +21,58 @@ public class TestSuite {
     this.path = path;
   }
   
-  private boolean test(String file) throws IOException {
-    LuaC.compile(file, working_dir + compiled);
-    Main.decompile(working_dir + compiled, working_dir + decompiled);
-    LuaC.compile(working_dir + decompiled, working_dir + recompiled);
-    return Compare.bytecode_equal(working_dir + compiled, working_dir + recompiled);
+  private TestResult test(String file) throws IOException {
+    try {
+      LuaC.compile(file, working_dir + compiled);
+    } catch (IOException e) {
+      return TestResult.SKIPPED;
+    }
+    try {
+      Main.decompile(working_dir + compiled, working_dir + decompiled);
+      LuaC.compile(working_dir + decompiled, working_dir + recompiled);
+      return Compare.bytecode_equal(working_dir + compiled, working_dir + recompiled) ? TestResult.OK : TestResult.FAILED;
+    } catch (IOException e) {
+      return TestResult.FAILED;
+    } catch (RuntimeException e) {
+      e.printStackTrace();
+      return TestResult.FAILED;
+    }
   }
   
   public boolean run() throws IOException {
     int passed = 0;
+    int skipped = 0;
     int failed = 0;
     File working = new File(working_dir);
     if(!working.exists()) {
       working.mkdir();
     }
     for(String name : files) {
-      if(test(path + name + ext)) {
-        System.out.println("Passed: " + name);
-        passed++;
-      } else {
-        System.out.println("Failed: " + name);
-        failed++;
+      switch (test(path + name + ext)) {
+        case OK:
+//          System.out.println("Passed: " + name);
+          passed++;
+          break;
+        case SKIPPED:
+          System.out.println("Skipped: " + name);
+          skipped++;
+          break;
+        default:
+          System.out.println("Failed: " + name);
+          failed++;
       }
     }
-    if(failed == 0) {
+    if(failed == 0 && skipped == 0) {
       System.out.println("All tests passed!");
-      return true;
     } else {
-      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests.");
-      return false;
+      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests, skipped "+skipped+" tests.");
     }
+    return failed == 0;
   }
   
   public boolean run(String file) throws IOException {
     int passed = 0;
+    int skipped = 0;
     int failed = 0;
     File working = new File(working_dir);
     if(!working.exists()) {
@@ -62,20 +80,25 @@ public class TestSuite {
     }
     {
       String name = file;
-      if(test(path + name + ext)) {
-        System.out.println("Passed: " + name);
-        passed++;
-      } else {
-        System.out.println("Failed: " + name);
-        failed++;
+      switch (test(path + name + ext)) {
+        case OK:
+//          System.out.println("Passed: " + name);
+          passed++;
+          break;
+        case SKIPPED:
+          System.out.println("Skipped: " + name);
+          skipped++;
+          break;
+        default:
+          System.out.println("Failed: " + name);
+          failed++;
       }
     }
-    if(failed == 0) {
+    if(failed == 0 && skipped == 0) {
       System.out.println("All tests passed!");
-      return true;
     } else {
-      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests.");
-      return false;
+      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests, skipped "+skipped+" tests.");
     }
+    return failed == 0;
   }
 }
