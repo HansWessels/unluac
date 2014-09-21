@@ -527,7 +527,7 @@ public class Decompiler {
         return !r.isLocal(code.A(line), line);
       case SETTABLE: {
         int C = code.C(line);
-        if((C & 0x100) != 0) {
+        if(f.isConstant(C)) {
           return false;
         } else {
           return !r.isLocal(C, line);
@@ -564,7 +564,7 @@ public class Decompiler {
       case SETGLOBAL:
         return r.getExpression(A, previous);
       case SETTABLE:
-        if((C & 0x100) != 0) {
+        if(f.isConstant(C)) {
           throw new IllegalStateException();
         } else {
           return r.getExpression(C, previous);

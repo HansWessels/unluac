@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import unluac.decompile.expression.ConstantExpression;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.expression.LocalVariable;
 import unluac.decompile.target.Target;
@@ -93,8 +92,8 @@ public class Registers {
   }
   
   public Expression getKExpression(int register, int line) {
-    if((register & 0x100) != 0) {
-      return f.getConstantExpression(register & 0xFF);
+    if(f.isConstant(register)) {
+      return f.getConstantExpression(f.constantIndex(register));
     } else {
       return getExpression(register, line);
     }
