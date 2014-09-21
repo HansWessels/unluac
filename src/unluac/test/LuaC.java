@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 public class LuaC {
 
   public static void compile(String in, String out) throws IOException {
-    String luac = System.getProperty("luac");
+    String luac = System.getProperty("luac", "luac");
     if(System.getProperty("os.name").contains("Windows")) {
       luac = luac + ".exe";
     }
