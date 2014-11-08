@@ -198,6 +198,10 @@ abstract public class Expression {
     return false;
   }
   
+  public boolean isNewEntryAllowed() {
+    throw new IllegalStateException();
+  }
+  
   public void addEntry(TableLiteral.Entry entry) {
     throw new IllegalStateException();
   }

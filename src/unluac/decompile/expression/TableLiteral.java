@@ -32,14 +32,12 @@ public class TableLiteral extends Expression {
   private boolean isObject = true;
   private boolean isList = true;
   private int listLength = 1;
+  private int capacity;
   
-  public TableLiteral() {
-    this(5, 5);
-  }
-
   public TableLiteral(int arraySize, int hashSize) {
     super(PRECEDENCE_ATOMIC);
     entries = new ArrayList<Entry>(arraySize + hashSize);
+    capacity = arraySize + hashSize;
   }
 
   @Override
@@ -128,6 +126,11 @@ public class TableLiteral extends Expression {
   @Override
   public boolean isTableLiteral() {
     return true;
+  }
+  
+  @Override
+  public boolean isNewEntryAllowed() {
+    return entries.size() < capacity;
   }
   
   @Override
