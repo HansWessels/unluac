@@ -845,7 +845,10 @@ public class Decompiler {
           }
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
-            for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
+            Block breakableEnclosing = enclosingBreakableBlock(cond.begin);
+            int loopstart = immediateEnclosing.end;
+            if(immediateEnclosing == breakableEnclosing) loopstart--;
+            for(int iline = loopstart; iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
               if(code.op(iline) == Op.JMP && iline + 1 + code.sBx(iline) == breakTarget) {
                 cond.end = iline;
                 break;
