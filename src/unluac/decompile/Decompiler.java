@@ -140,6 +140,15 @@ public class Decompiler {
     }
   }
   
+  private int fb2int(int fb) {
+    int exponent = (fb >> 3) & 0x1f;
+    if(exponent == 0) {
+      return fb;
+    } else {
+      return ((fb & 7) + 8) << (exponent - 1);
+    }
+  }
+  
   private List<Operation> processLine(int line) {
     List<Operation> operations = new LinkedList<Operation>();
     int A = code.A(line);
@@ -202,7 +211,7 @@ public class Decompiler {
         operations.add(new TableSet(line, r.getExpression(A, line), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         break;
       case NEWTABLE:
-        operations.add(new RegisterSet(line, A, new TableLiteral(B, C)));
+        operations.add(new RegisterSet(line, A, new TableLiteral(fb2int(B), fb2int(C))));
         break;
       case SELF: {
         // We can later determine is : syntax was used by comparing subexpressions with ==
