@@ -20,7 +20,12 @@ public class ConstantExpression extends Expression {
   
   @Override
   public void print(Output out) {
-    constant.print(out);
+    constant.print(out, false);
+  }
+  
+  @Override
+  public void printBraced(Output out) {
+    constant.print(out, true);
   }
   
   @Override

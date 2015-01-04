@@ -119,6 +119,15 @@ abstract public class Expression {
   abstract public void print(Output out);
   
   /**
+   * Prints the expression in a context where it is surrounded by braces.
+   * (Thus if the expression would begin with a brace, it must be enclosed
+   * in parentheses to avoid ambiguity.)
+   */
+  public void printBraced(Output out) {
+    print(out);
+  }
+  
+  /**
    * Prints the expression in a context that accepts multiple values.
    * (Thus, if an expression that normally could return multiple values
    * doesn't, it should use parens to adjust to 1.)

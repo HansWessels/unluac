@@ -26,7 +26,7 @@ public class TableReference extends Expression {
       out.print(index.asName());
     } else {
       out.print("[");
-      index.print(out);
+      index.printBraced(out);
       out.print("]");
     }
   }

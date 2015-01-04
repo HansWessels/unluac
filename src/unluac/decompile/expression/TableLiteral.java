@@ -117,7 +117,7 @@ public class TableLiteral extends Expression {
       value.print(out);
     } else {
       out.print("[");
-      key.print(out);
+      key.printBraced(out);
       out.print("] = ");
       value.print(out);
     }
