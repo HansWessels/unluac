@@ -540,7 +540,8 @@ public class Decompiler {
       case SETUPVAL:
       case SETGLOBAL:
         return !r.isLocal(code.A(line), line);
-      case SETTABLE: {
+      case SETTABLE:
+      case SETTABUP: {
         int C = code.C(line);
         if((C & 0x100) != 0) {
           return false;
@@ -563,6 +564,17 @@ public class Decompiler {
         return new GlobalTarget(f.getGlobalName(code.Bx(line)));
       case SETTABLE:
         return new TableTarget(r.getExpression(code.A(line), previous), r.getKExpression(code.B(line), previous));
+      case SETTABUP: {
+        int A = code.A(line);
+        int B = code.B(line);
+        boolean isEnv = upvalues.getName(A).equals("_ENV");
+        boolean isVar = (B & 0x100) != 0 && f.getConstantExpression(B & 0xFF).isIdentifier();
+        if(isEnv && isVar) {
+          return new GlobalTarget(f.getGlobalName(B & 0xFF));
+        } else {
+          return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, line));
+        }
+      }
       default:
         throw new IllegalStateException();
     }
@@ -579,6 +591,7 @@ public class Decompiler {
       case SETGLOBAL:
         return r.getExpression(A, previous);
       case SETTABLE:
+      case SETTABUP:
         if((C & 0x100) != 0) {
           throw new IllegalStateException();
         } else {
