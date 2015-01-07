@@ -34,6 +34,11 @@ public class ConstantExpression extends Expression {
   }
   
   @Override
+  public boolean isUngrouped() {
+    return true;
+  }
+  
+  @Override
   public boolean isNil() {
     return constant.isNil();
   }

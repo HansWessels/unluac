@@ -16,14 +16,13 @@ abstract public class Statement {
     for(int i = 0; i < n; i++) {
       boolean last = (i + 1 == n);
       Statement stmt = stmts.get(i);
-      Statement next = last ? null : stmts.get(i + 1);
+      if(stmt.beginsWithParen()) {
+        out.print(";");
+      }
       if(last) {
         stmt.printTail(out);
       } else {
         stmt.print(out);
-      }
-      if(next != null && stmt instanceof FunctionCallStatement && next.beginsWithParen()) {
-        out.print(";");
       }
       if(!(stmt instanceof IfThenElseBlock)) {
         out.println();

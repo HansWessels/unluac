@@ -20,7 +20,15 @@ public class TableReference extends Expression {
   
   @Override
   public void print(Output out) {
-    table.print(out);
+    if(table.isUngrouped()) {
+      out.print("(");
+      table.print(out);
+      out.print(")");
+    }
+    else
+    {
+      table.print(out);
+    }
     if(index.isIdentifier()) {
       out.print(".");
       out.print(index.asName());
@@ -39,6 +47,11 @@ public class TableReference extends Expression {
   @Override
   public boolean isMemberAccess() {
     return index.isIdentifier();
+  }
+  
+  @Override
+  public boolean beginsWithParen() {
+    return table.isUngrouped() || table.beginsWithParen();
   }
   
   @Override

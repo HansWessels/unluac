@@ -25,4 +25,8 @@ abstract public class Target {
     return true;
   }
   
+  public boolean beginsWithParen() {
+    return false;
+  }
+  
 }

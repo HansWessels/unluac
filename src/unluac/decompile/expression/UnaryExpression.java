@@ -14,6 +14,11 @@ public class UnaryExpression extends Expression {
   }
 
   @Override
+  public boolean isUngrouped() {
+    return true;
+  }
+  
+  @Override
   public int getConstantIndex() {
     return expression.getConstantIndex();
   }

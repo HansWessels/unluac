@@ -37,4 +37,9 @@ public class TableTarget extends Target {
     return true;
   }
   
+  @Override
+  public boolean beginsWithParen() {
+    return table.isUngrouped() || table.beginsWithParen();
+  }
+  
 }

@@ -32,6 +32,11 @@ public class ClosureExpression extends Expression {
   }
   
   @Override
+  public boolean isUngrouped() {
+    return true;
+  }
+  
+  @Override
   public boolean isUpvalueOf(int register) {
     /*
     if(function.header.version == 0x51) {

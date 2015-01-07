@@ -18,6 +18,11 @@ public class BinaryExpression extends Expression {
   }
 
   @Override
+  public boolean isUngrouped() {
+    return !beginsWithParen();
+  }
+  
+  @Override
   public int getConstantIndex() {
     return Math.max(left.getConstantIndex(), right.getConstantIndex());
   }

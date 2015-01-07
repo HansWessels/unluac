@@ -50,9 +50,9 @@ public class FunctionCall extends Expression {
   public boolean beginsWithParen() {
     if(isMethodCall()) {
       Expression obj = function.getTable();
-      return obj.isClosure() || obj.isConstant() || obj.beginsWithParen();
+      return obj.isUngrouped() || obj.beginsWithParen();
     } else {
-      return function.isClosure() || function.isConstant() || function.beginsWithParen();
+      return function.isUngrouped() || function.beginsWithParen();
     }
   }
   
@@ -61,7 +61,7 @@ public class FunctionCall extends Expression {
     ArrayList<Expression> args = new ArrayList<Expression>(arguments.length);
     if(isMethodCall()) {
       Expression obj = function.getTable();
-      if(obj.isClosure() || obj.isConstant()) {
+      if(obj.isUngrouped()) {
         out.print("(");
         obj.print(out);
         out.print(")");
@@ -74,7 +74,7 @@ public class FunctionCall extends Expression {
         args.add(arguments[i]);
       }
     } else {
-      if(function.isClosure() || function.isConstant()) {
+      if(function.isUngrouped()) {
         out.print("(");
         function.print(out);
         out.print(")");

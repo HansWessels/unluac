@@ -129,6 +129,11 @@ public class TableLiteral extends Expression {
   }
   
   @Override
+  public boolean isUngrouped() {
+    return true;
+  }
+  
+  @Override
   public boolean isNewEntryAllowed() {
     return entries.size() < capacity;
   }

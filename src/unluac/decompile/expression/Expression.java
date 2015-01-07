@@ -158,6 +158,17 @@ abstract public class Expression {
     return false;
   }
   
+  /**
+   * An ungrouped expression is one that needs to be enclosed in parentheses
+   * before it can be dereferenced. This doesn't apply to multiply-valued expressions
+   * as those will be given parentheses automatically when converted to a single value.
+   * e.g.
+   *  (a+b).c; ("asdf"):gsub()
+   */
+  public boolean isUngrouped() {
+    return false;
+  }
+  
   // Only supported for closures
   public boolean isUpvalueOf(int register) {
     throw new IllegalStateException();

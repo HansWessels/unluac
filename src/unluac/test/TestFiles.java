@@ -3,6 +3,7 @@ package unluac.test;
 public class TestFiles {
 
   public static final String[] tests = {
+    "method02",/*
     "assign",
     "literal",
     "multiassign",
@@ -104,7 +105,7 @@ public class TestFiles {
     "report02c",
     "report02d",
     "report02e",
-    "report03",
+    "report03",*/
   };
   
   public static TestSuite suite = new TestSuite(".\\test\\src\\", tests);
