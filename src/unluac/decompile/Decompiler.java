@@ -184,7 +184,7 @@ public class Decompiler {
       case GETTABUP: {
         Expression table = upvalues.getExpression(B);
         boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
-        boolean isVar = (C & 0x100) != 0 && f.getGlobalExpression(C & 0xFF).isIdentifier();
+        boolean isVar = (C & 0x100) != 0 && f.getConstantExpression(C & 0xFF).isIdentifier();
         if(isEnv && isVar) {
           operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF)));
         } else {
@@ -204,7 +204,7 @@ public class Decompiler {
       case SETTABUP: {
         Expression table = upvalues.getExpression(A);
         boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
-        boolean isVar = (B & 0x100) != 0 && f.getGlobalExpression(B & 0xFF).isIdentifier();
+        boolean isVar = (B & 0x100) != 0 && f.getConstantExpression(B & 0xFF).isIdentifier();
         if(isEnv && isVar) {
           operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line)));
         } else {
