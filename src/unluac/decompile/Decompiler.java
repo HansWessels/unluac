@@ -182,13 +182,12 @@ public class Decompiler {
         operations.add(new RegisterSet(line, A, upvalues.getExpression(B)));
         break;
       case GETTABUP: {
-        Expression table = upvalues.getExpression(B);
-        boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
+        boolean isEnv = upvalues.getName(B).equals("_ENV");
         boolean isVar = (C & 0x100) != 0 && f.getConstantExpression(C & 0xFF).isIdentifier();
         if(isEnv && isVar) {
           operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF)));
         } else {
-          operations.add(new RegisterSet(line, A, new TableReference(table, r.getKExpression(C, line))));
+          operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
         }
         break;
       }
@@ -202,13 +201,12 @@ public class Decompiler {
         operations.add(new UpvalueSet(line, upvalues.getName(B), r.getExpression(A, line)));
         break;
       case SETTABUP: {
-        Expression table = upvalues.getExpression(A);
-        boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
+        boolean isEnv = upvalues.getName(A).equals("_ENV");
         boolean isVar = (B & 0x100) != 0 && f.getConstantExpression(B & 0xFF).isIdentifier();
         if(isEnv && isVar) {
           operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line)));
         } else {
-          operations.add(new TableSet(line, table, r.getKExpression(B, line), r.getKExpression(C, line), true, line));
+          operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         }
         break;
       }
