@@ -181,13 +181,17 @@ public class Decompiler {
       case GETUPVAL:
         operations.add(new RegisterSet(line, A, upvalues.getExpression(B)));
         break;
-      case GETTABUP:
-        if(B == 0 && (C & 0x100) != 0) {
-          operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF))); //TODO: check
+      case GETTABUP: {
+        Expression table = upvalues.getExpression(B);
+        boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
+        boolean isVar = (C & 0x100) != 0 && f.getGlobalExpression(C & 0xFF).isIdentifier();
+        if(isEnv && isVar) {
+          operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF)));
         } else {
-          operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
+          operations.add(new RegisterSet(line, A, new TableReference(table, r.getKExpression(C, line))));
         }
         break;
+      }
       case GETGLOBAL:
         operations.add(new RegisterSet(line, A, f.getGlobalExpression(Bx)));
         break;
@@ -197,13 +201,17 @@ public class Decompiler {
       case SETUPVAL:
         operations.add(new UpvalueSet(line, upvalues.getName(B), r.getExpression(A, line)));
         break;
-      case SETTABUP:
-        if(A == 0 && (B & 0x100) != 0) {
-          operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line))); //TODO: check
+      case SETTABUP: {
+        Expression table = upvalues.getExpression(A);
+        boolean isEnv = table.isIdentifier() && table.asName().equals("_ENV");
+        boolean isVar = (B & 0x100) != 0 && f.getGlobalExpression(B & 0xFF).isIdentifier();
+        if(isEnv && isVar) {
+          operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line)));
         } else {
-          operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
+          operations.add(new TableSet(line, table, r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         }
         break;
+      }
       case SETGLOBAL:
         operations.add(new GlobalSet(line, f.getGlobalName(Bx), r.getExpression(A, line)));
         break;

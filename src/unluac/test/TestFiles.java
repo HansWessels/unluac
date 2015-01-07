@@ -91,6 +91,7 @@ public class TestFiles {
     "inlineconstant01",
     "string01",
     "string02",
+    "upvalue01",
     "report01a",
     "report01b",
     "report01c",
