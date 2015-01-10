@@ -13,6 +13,7 @@ public class LuaC {
     } else {
       luac = "luac";
     }
+    luac = "/LuaTest/bin/luac52.exe";
     ProcessBuilder pb = new ProcessBuilder(luac, "-o", out, in);
     pb.directory(null);
     Process p = pb.start();

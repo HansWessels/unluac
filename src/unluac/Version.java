@@ -35,6 +35,8 @@ public abstract class Version {
   
   public abstract boolean isAllowedPreceedingSemicolon();
   
+  public abstract boolean isEnvironmentTable(String name);
+  
 }
 
 class Version51 extends Version {
@@ -80,6 +82,11 @@ class Version51 extends Version {
   
   @Override
   public boolean isAllowedPreceedingSemicolon() {
+    return false;
+  }
+  
+  @Override
+  public boolean isEnvironmentTable(String upvalue) {
     return false;
   }
   
@@ -129,6 +136,11 @@ class Version52 extends Version {
   @Override
   public boolean isAllowedPreceedingSemicolon() {
     return true;
+  }
+  
+  @Override
+  public boolean isEnvironmentTable(String name) {
+    return name.equals("_ENV");
   }
   
 }

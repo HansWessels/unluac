@@ -21,17 +21,22 @@ public class TableReference extends Expression {
   
   @Override
   public void print(Decompiler d, Output out) {
-    if(table.isUngrouped()) {
-      out.print("(");
-      table.print(d, out);
-      out.print(")");
-    }
-    else
-    {
-      table.print(d, out);
+    boolean isGlobal = table.isEnvironmentTable(d) && index.isIdentifier();
+    if(!isGlobal) {
+      if(table.isUngrouped()) {
+        out.print("(");
+        table.print(d, out);
+        out.print(")");
+      }
+      else
+      {
+        table.print(d, out);
+      }
     }
     if(index.isIdentifier()) {
-      out.print(".");
+      if(!isGlobal) {
+        out.print(".");
+      }
       out.print(index.asName());
     } else {
       out.print("[");

@@ -186,16 +186,9 @@ public class Decompiler {
       case GETUPVAL:
         operations.add(new RegisterSet(line, A, upvalues.getExpression(B)));
         break;
-      case GETTABUP: {
-        boolean isEnv = upvalues.getName(B).equals("_ENV");
-        boolean isVar = (C & 0x100) != 0 && f.getConstantExpression(C & 0xFF).isIdentifier();
-        if(isEnv && isVar) {
-          operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF)));
-        } else {
-          operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
-        }
+      case GETTABUP:
+        operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
         break;
-      }
       case GETGLOBAL:
         operations.add(new RegisterSet(line, A, f.getGlobalExpression(Bx)));
         break;
@@ -205,16 +198,9 @@ public class Decompiler {
       case SETUPVAL:
         operations.add(new UpvalueSet(line, upvalues.getName(B), r.getExpression(A, line)));
         break;
-      case SETTABUP: {
-        boolean isEnv = upvalues.getName(A).equals("_ENV");
-        boolean isVar = (B & 0x100) != 0 && f.getConstantExpression(B & 0xFF).isIdentifier();
-        if(isEnv && isVar) {
-          operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line)));
-        } else {
-          operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
-        }
+      case SETTABUP:
+        operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         break;
-      }
       case SETGLOBAL:
         operations.add(new GlobalSet(line, f.getGlobalName(Bx), r.getExpression(A, line)));
         break;
@@ -572,13 +558,7 @@ public class Decompiler {
       case SETTABUP: {
         int A = code.A(line);
         int B = code.B(line);
-        boolean isEnv = upvalues.getName(A).equals("_ENV");
-        boolean isVar = (B & 0x100) != 0 && f.getConstantExpression(B & 0xFF).isIdentifier();
-        if(isEnv && isVar) {
-          return new GlobalTarget(f.getGlobalName(B & 0xFF));
-        } else {
-          return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, line));
-        }
+        return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, line));
       }
       default:
         throw new IllegalStateException();

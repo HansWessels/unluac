@@ -32,4 +32,9 @@ public class UpvalueExpression extends Expression {
     return true;
   }
   
+  @Override
+  public boolean isEnvironmentTable(Decompiler d) {
+    return d.getVersion().isEnvironmentTable(name);
+  }
+  
 }

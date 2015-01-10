@@ -250,4 +250,8 @@ abstract public class Expression {
     return false;
   }
   
+  public boolean isEnvironmentTable(Decompiler d) {
+    return false;
+  }
+  
 }
