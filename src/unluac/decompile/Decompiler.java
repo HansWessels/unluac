@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import unluac.Version;
 import unluac.decompile.block.AlwaysLoop;
 import unluac.decompile.block.Block;
 import unluac.decompile.block.BooleanIndicator;
@@ -96,6 +97,10 @@ public class Decompiler {
     params = function.numParams;
     vararg = function.vararg;
     tforTarget = function.header.version.getTForTarget();
+  }
+  
+  public Version getVersion() {
+    return function.header.version;
   }
   
   private Registers r;

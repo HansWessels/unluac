@@ -33,6 +33,8 @@ public abstract class Version {
   
   public abstract boolean isBreakableLoopEnd(Op op);
   
+  public abstract boolean isAllowedPreceedingSemicolon();
+  
 }
 
 class Version51 extends Version {
@@ -76,6 +78,11 @@ class Version51 extends Version {
     return op == Op.JMP || op == Op.FORLOOP;
   }
   
+  @Override
+  public boolean isAllowedPreceedingSemicolon() {
+    return false;
+  }
+  
 }
 
 class Version52 extends Version {
@@ -117,6 +124,11 @@ class Version52 extends Version {
   @Override
   public boolean isBreakableLoopEnd(Op op) {
     return op == Op.JMP || op == Op.FORLOOP || op == Op.TFORLOOP;
+  }
+  
+  @Override
+  public boolean isAllowedPreceedingSemicolon() {
+    return true;
   }
   
 }
