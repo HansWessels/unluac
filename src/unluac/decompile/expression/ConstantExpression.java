@@ -1,6 +1,7 @@
 package unluac.decompile.expression;
 
 import unluac.decompile.Constant;
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class ConstantExpression extends Expression {
@@ -19,12 +20,12 @@ public class ConstantExpression extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     constant.print(out, false);
   }
   
   @Override
-  public void printBraced(Output out) {
+  public void printBraced(Decompiler d, Output out) {
     constant.print(out, true);
   }
   

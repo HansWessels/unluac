@@ -58,21 +58,21 @@ public class ClosureExpression extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler outer, Output out) {
     Decompiler d = new Decompiler(function);
     out.print("function");
     printMain(out, d, true);
   }
   
   @Override
-  public void printClosure(Output out, Target name) {
+  public void printClosure(Decompiler outer, Output out, Target name) {
     Decompiler d = new Decompiler(function);
     out.print("function ");
     if(function.numParams >= 1 && d.declList[0].name.equals("self") && name instanceof TableTarget) {
-      name.printMethod(out);
+      name.printMethod(outer, out);
       printMain(out, d, false);
     } else {
-      name.print(out);
+      name.print(outer, out);
       printMain(out, d, true);
     }
   }
@@ -81,10 +81,10 @@ public class ClosureExpression extends Expression {
     out.print("(");
     int start = includeFirst ? 0 : 1;
     if(function.numParams > start) {
-      new VariableTarget(d.declList[start]).print(out);
+      new VariableTarget(d.declList[start]).print(d, out);
       for(int i = start + 1; i < function.numParams; i++) {
         out.print(", ");
-        new VariableTarget(d.declList[i]).print(out);
+        new VariableTarget(d.declList[i]).print(d, out);
       }
     }
     if((function.vararg & 1) == 1) {

@@ -3,6 +3,7 @@ package unluac.decompile.expression;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class TableLiteral extends Expression {
@@ -51,7 +52,7 @@ public class TableLiteral extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     Collections.sort(entries);
     listLength = 1;
     if(entries.isEmpty()) {
@@ -75,7 +76,7 @@ public class TableLiteral extends Expression {
         out.println();
         out.indent();
       }
-      printEntry(0, out);
+      printEntry(d, 0, out);
       if(!entries.get(0).value.isMultiple()) {
         for(int index = 1; index < entries.size(); index++) {
           out.print(",");
@@ -84,7 +85,7 @@ public class TableLiteral extends Expression {
           } else {
             out.print(" ");
           }
-          printEntry(index, out);
+          printEntry(d, index, out);
           if(entries.get(index).value.isMultiple()) {
             break;
           }
@@ -98,7 +99,7 @@ public class TableLiteral extends Expression {
     }    
   }
   
-  private void printEntry(int index, Output out) {
+  private void printEntry(Decompiler d, int index, Output out) {
     Entry entry = entries.get(index);
     Expression key = entry.key;
     Expression value = entry.value;
@@ -106,20 +107,20 @@ public class TableLiteral extends Expression {
     boolean multiple = index + 1 >= entries.size() || value.isMultiple();
     if(isList && key.isInteger() && listLength == key.asInteger()) {
       if(multiple) {
-        value.printMultiple(out);
+        value.printMultiple(d, out);
       } else {
-        value.print(out);
+        value.print(d, out);
       }
       listLength++;
     } else if(isObject && key.isIdentifier()) {
       out.print(key.asName());
       out.print(" = ");
-      value.print(out);
+      value.print(d, out);
     } else {
       out.print("[");
-      key.printBraced(out);
+      key.printBraced(d, out);
       out.print("] = ");
-      value.print(out);
+      value.print(d, out);
     }
   }
   

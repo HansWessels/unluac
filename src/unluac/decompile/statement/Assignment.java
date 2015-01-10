@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unluac.decompile.Declaration;
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.expression.Expression;
 import unluac.decompile.target.Target;
@@ -91,7 +92,7 @@ public class Assignment extends Statement {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     if(!targets.isEmpty()) {
       if(declare) {
         out.print("local ");
@@ -111,17 +112,17 @@ public class Assignment extends Statement {
         //if(closure.isUpvalueOf(targets.get(0).))
       }
       if(!functionSugar) {
-        targets.get(0).print(out);
+        targets.get(0).print(d, out);
         for(int i = 1; i < targets.size(); i++) {
           out.print(", ");
-          targets.get(i).print(out);
+          targets.get(i).print(d, out);
         }
         if(!declare || !allnil) {
           out.print(" = ");
-          Expression.printSequence(out, values, false, false);
+          Expression.printSequence(d, out, values, false, false);
         }
       } else {
-        values.get(0).printClosure(out, targets.get(0));
+        values.get(0).printClosure(d, out, targets.get(0));
       }
       if(comment != null) {
         out.print(" -- ");

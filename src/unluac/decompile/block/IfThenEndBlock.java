@@ -63,13 +63,13 @@ public class IfThenEndBlock extends Block {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("if ");
-    branch.asExpression(r).print(out);
+    branch.asExpression(r).print(d, out);
     out.print(" then");
     out.println();
     out.indent();
-    Statement.printSequence(out, statements);
+    Statement.printSequence(d, out, statements);
     out.dedent();
     out.print("end");
   }

@@ -119,7 +119,7 @@ public class Decompiler {
   
   public void print(Output out) {
     handleInitialDeclares(out);
-    outer.print(out);
+    outer.print(this, out);
   }
   
   private void handleInitialDeclares(Output out) {

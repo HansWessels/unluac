@@ -2,6 +2,7 @@ package unluac.decompile.expression;
 
 import java.util.ArrayList;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class FunctionCall extends Expression {
@@ -32,11 +33,11 @@ public class FunctionCall extends Expression {
   }
   
   @Override
-  public void printMultiple(Output out) {
+  public void printMultiple(Decompiler d, Output out) {
     if(!multiple) {
       out.print("(");
     }
-    print(out);
+    print(d, out);
     if(!multiple) {
       out.print(")");
     }
@@ -57,16 +58,16 @@ public class FunctionCall extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     ArrayList<Expression> args = new ArrayList<Expression>(arguments.length);
     if(isMethodCall()) {
       Expression obj = function.getTable();
       if(obj.isUngrouped()) {
         out.print("(");
-        obj.print(out);
+        obj.print(d, out);
         out.print(")");
       } else {
-        obj.print(out);
+        obj.print(d, out);
       }
       out.print(":");
       out.print(function.getField());
@@ -76,17 +77,17 @@ public class FunctionCall extends Expression {
     } else {
       if(function.isUngrouped()) {
         out.print("(");
-        function.print(out);
+        function.print(d, out);
         out.print(")");
       } else {
-        function.print(out);
+        function.print(d, out);
       }
       for(int i = 0; i < arguments.length; i++) {
         args.add(arguments[i]);
       }
     }
     out.print("(");
-    Expression.printSequence(out, args, false, true);
+    Expression.printSequence(d, out, args, false, true);
     out.print(")");
   }
   

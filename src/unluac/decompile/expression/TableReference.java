@@ -1,5 +1,6 @@
 package unluac.decompile.expression;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class TableReference extends Expression {
@@ -19,22 +20,22 @@ public class TableReference extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     if(table.isUngrouped()) {
       out.print("(");
-      table.print(out);
+      table.print(d, out);
       out.print(")");
     }
     else
     {
-      table.print(out);
+      table.print(d, out);
     }
     if(index.isIdentifier()) {
       out.print(".");
       out.print(index.asName());
     } else {
       out.print("[");
-      index.printBraced(out);
+      index.printBraced(d, out);
       out.print("]");
     }
   }

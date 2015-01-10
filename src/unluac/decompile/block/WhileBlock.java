@@ -3,6 +3,7 @@ package unluac.decompile.block;
 import java.util.ArrayList;
 import java.util.List;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.branch.Branch;
@@ -55,13 +56,13 @@ public class WhileBlock extends Block {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("while ");
-    branch.asExpression(r).print(out);
+    branch.asExpression(r).print(d, out);
     out.print(" do");
     out.println();
     out.indent();
-    Statement.printSequence(out, statements);
+    Statement.printSequence(d, out, statements);
     out.dedent();
     out.print("end");
   }

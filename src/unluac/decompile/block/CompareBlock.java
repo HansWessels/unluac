@@ -47,7 +47,7 @@ public class CompareBlock extends Block {
   }
 
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("-- unhandled compare assign");    
   }
   

@@ -52,10 +52,10 @@ public class SetBlock extends Block {
   }
 
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     if(assign != null && assign.getFirstTarget() != null) {
       Assignment assignOut = new Assignment(assign.getFirstTarget(), getValue());
-      assignOut.print(out);
+      assignOut.print(d, out);
     } else {
       out.print("-- unhandled set block");
       out.println();

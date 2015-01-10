@@ -1,5 +1,6 @@
 package unluac.decompile.block;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
 import unluac.parse.LFunction;
@@ -36,7 +37,7 @@ public class BooleanIndicator extends Block {
   }
 
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("-- unhandled boolean indicator");
   }
   
