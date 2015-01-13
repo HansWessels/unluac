@@ -70,6 +70,10 @@ public class Code {
     return code[line - 1];
   }
   
+  public int length() {
+    return code.length;
+  }
+  
   public String toString(int line) {
     return op(line).codePointToString(codepoint(line));
   }

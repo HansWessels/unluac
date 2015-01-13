@@ -87,10 +87,14 @@ public class Decompiler {
       }
     } else {
       //TODO: debug info missing;
+      /*
       declList = new Declaration[function.numParams];
       for(int i = 0; i < declList.length; i++) {
         declList[i] = new Declaration("_ARG_" + i + "_", 0, length - 1);
       }
+      */
+      declList = VariableFinder.process(this, function.numParams, function.maximumStackSize);
+      
     }
     upvalues = new Upvalues(function.upvalues);
     functions = function.functions;
