@@ -62,7 +62,9 @@ public class VariableFinder {
   public static Declaration[] process(Decompiler d, int args, int registers) {
     Code code = d.code;
     RegisterStates states = new RegisterStates(registers, code.length());
+    boolean[] skip = new boolean[code.length()];
     for(int line = 1; line <= code.length(); line++) {
+      if(skip[line - 1]) continue;
       switch(code.op(line)) {
         case MOVE:
           states.get(code.A(line), line).written = true;
@@ -143,16 +145,26 @@ public class VariableFinder {
             if(C >= 2) {
               for(int register = code.A(line); register <= code.A(line) + C - 2; register++) {
                 states.get(register, line).written = true;
-                if(C >= 3) states.setLocal(register, line);
               }
-            } else {
-              //TODO
-              states.setTemporary(code.A(line), line - 1);
             }
           }
           for(int register = code.A(line); register <= code.A(line) + B - 1; register++) {
             states.get(code.A(line), line).read = true;
-            states.setTemporary(code.A(line), line - 1);
+            states.setTemporary(code.A(line), line);
+          }
+          if(C >= 2) {
+            int nline = line + 1;
+            int register = code.A(line) + C - 2;
+            while(register >= code.A(line) && nline <= code.length()) {
+              if(code.op(nline) == Op.MOVE && code.B(nline) == register) {
+                states.get(code.A(nline), nline).written = true;
+                states.get(code.B(nline), nline).read = true;
+                states.setLocal(code.A(nline), nline);
+                skip[nline - 1] = true;
+              }
+              register--;
+              nline++;
+            }
           }
           break;
         }
