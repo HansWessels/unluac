@@ -39,13 +39,13 @@ public class VariableFinder {
     
     public void setLocal(int register, int line) {
       for(int r = 0; r <= register; r++) {
-        get(register, line).local = true;
+        get(r, line).local = true;
       }
     }
     
     public void setTemporary(int register, int line) {
       for(int r = register; r < registers; r++) {
-        get(register, line).temporary = true;
+        get(r, line).temporary = true;
       }
     }
     
@@ -69,7 +69,7 @@ public class VariableFinder {
         case MOVE:
           states.get(code.A(line), line).written = true;
           states.get(code.B(line), line).read = true;
-          states.setLocal(code.B(line), line);
+          states.setLocal(Math.min(code.A(line), code.B(line)), line);
           break;
         case LOADK:
         case LOADBOOL:
@@ -121,6 +121,9 @@ public class VariableFinder {
             states.get(register, line).read = true;
             states.setTemporary(register, line);
           }
+          break;
+        case SETLIST:
+          states.setTemporary(code.A(line) + 1, line);
           break;
         case JMP:
           break;
