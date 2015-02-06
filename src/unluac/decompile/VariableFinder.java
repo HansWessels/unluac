@@ -199,7 +199,7 @@ public class VariableFinder {
         }
       }
       if(local) {
-        Declaration decl = new Declaration(id + register + "_" + lc, 0, code.length() - 1);
+        Declaration decl = new Declaration(id + register + "_" + lc, 0, code.length() + d.getVersion().getOuterBlockScopeAdjustment());
         decl.register = register;
         lc++;
         declList.add(decl);
