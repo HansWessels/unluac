@@ -95,9 +95,9 @@ public class TestSuite {
       }
     }
     if(failed == 0 && skipped == 0) {
-      System.out.println("All tests passed!");
+      System.out.println(spec.getLuaCName() + ": All tests passed!");
     } else {
-      System.out.println("Failed " + failed + " of " + (failed + passed) + " tests, skipped "+skipped+" tests.");
+      System.out.println(spec.getLuaCName() + ": Failed " + failed + " of " + (failed + passed) + " tests, skipped "+skipped+" tests.");
     }
     return failed == 0;
   }

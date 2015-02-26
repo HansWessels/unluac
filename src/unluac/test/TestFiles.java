@@ -51,7 +51,6 @@ public class TestFiles {
     "compareorder03",
     "compareorder04",
     "compareorder05",
-    "ellipsis",
     "table01",
     "table02",
     "localfunction01",
@@ -62,8 +61,6 @@ public class TestFiles {
     "declare02",
     "declare03",
     "adjust01",
-    "adjust02",
-    "adjust03",
     "adjust04",
     "adjust05",
     "final01",
@@ -101,6 +98,10 @@ public class TestFiles {
     "report02d",
     "report02e",
     "report03",
+    "51_expression",
+    "51_ellipsis",
+    "51_adjust02",
+    "51_adjust03",
   };
   
   public static TestSuite suite = new TestSuite(".\\test\\src\\", tests);
