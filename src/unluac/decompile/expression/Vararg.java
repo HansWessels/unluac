@@ -1,5 +1,6 @@
 package unluac.decompile.expression;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class Vararg extends Expression {
@@ -19,13 +20,13 @@ public class Vararg extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     //out.print("...");
     out.print(multiple ? "..." : "(...)");
   }
   
   @Override
-  public void printMultiple(Output out) {
+  public void printMultiple(Decompiler d, Output out) {
     out.print(multiple ? "..." : "(...)");
   }
     

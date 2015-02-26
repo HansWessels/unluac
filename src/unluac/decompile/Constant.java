@@ -76,7 +76,7 @@ public class Constant {
     }
   }
   
-  public void print(Output out) {
+  public void print(Output out, boolean braced) {
     switch(type) {
       case 0:
         out.print("nil");
@@ -108,6 +108,7 @@ public class Constant {
             while(i-- > 0) pipeString += "=";
             pipeString += "]";
           }
+          if(braced) out.print("(");
           out.print("[");
           while(pipe-- > 0) out.print("=");
           out.print("[");
@@ -116,6 +117,7 @@ public class Constant {
           out.println();
           out.print(string);
           out.print(pipeString);
+          if(braced) out.print(")");
           out.setIndentationLevel(indent);
         } else {
           out.print("\"");

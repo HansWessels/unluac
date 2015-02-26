@@ -1,5 +1,6 @@
 package unluac.decompile.expression;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class TableReference extends Expression {
@@ -19,14 +20,27 @@ public class TableReference extends Expression {
   }
   
   @Override
-  public void print(Output out) {
-    table.print(out);
+  public void print(Decompiler d, Output out) {
+    boolean isGlobal = table.isEnvironmentTable(d) && index.isIdentifier();
+    if(!isGlobal) {
+      if(table.isUngrouped()) {
+        out.print("(");
+        table.print(d, out);
+        out.print(")");
+      }
+      else
+      {
+        table.print(d, out);
+      }
+    }
     if(index.isIdentifier()) {
-      out.print(".");
+      if(!isGlobal) {
+        out.print(".");
+      }
       out.print(index.asName());
     } else {
       out.print("[");
-      index.print(out);
+      index.printBraced(d, out);
       out.print("]");
     }
   }
@@ -39,6 +53,11 @@ public class TableReference extends Expression {
   @Override
   public boolean isMemberAccess() {
     return index.isIdentifier();
+  }
+  
+  @Override
+  public boolean beginsWithParen() {
+    return table.isUngrouped() || table.beginsWithParen();
   }
   
   @Override

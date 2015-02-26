@@ -1,13 +1,14 @@
 package unluac.decompile.target;
 
 import unluac.decompile.Declaration;
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 abstract public class Target {
 
-  abstract public void print(Output out);
+  abstract public void print(Decompiler d, Output out);
   
-  abstract public void printMethod(Output out);
+  abstract public void printMethod(Decompiler d, Output out);
   
   public boolean isDeclaration(Declaration decl) {
     return false;
@@ -23,6 +24,10 @@ abstract public class Target {
   
   public boolean isFunctionName() {
     return true;
+  }
+  
+  public boolean beginsWithParen() {
+    return false;
   }
   
 }

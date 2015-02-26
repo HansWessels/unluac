@@ -88,10 +88,14 @@ public class Decompiler {
       }
     } else {
       //TODO: debug info missing;
+      /*
       declList = new Declaration[function.numParams];
       for(int i = 0; i < declList.length; i++) {
         declList[i] = new Declaration("_ARG_" + i + "_", 0, length - 1);
       }
+      */
+      declList = VariableFinder.process(this, function.numParams, function.maximumStackSize);
+      
     }
     upvalues = new Upvalues(function.upvalues);
     functions = function.functions;
@@ -99,6 +103,10 @@ public class Decompiler {
     vararg = function.vararg;
     tforTarget = function.header.version.getTForTarget();
     forTarget = function.header.version.getForTarget();
+  }
+  
+  public Version getVersion() {
+    return function.header.version;
   }
   
   private Registers r;
@@ -122,7 +130,7 @@ public class Decompiler {
   
   public void print(Output out) {
     handleInitialDeclares(out);
-    outer.print(out);
+    outer.print(this, out);
   }
   
   private void handleInitialDeclares(Output out) {
@@ -140,6 +148,15 @@ public class Decompiler {
         out.print(initdecls.get(i).name);
       }
       out.println();
+    }
+  }
+  
+  private int fb2int(int fb) {
+    int exponent = (fb >> 3) & 0x1f;
+    if(exponent == 0) {
+      return fb;
+    } else {
+      return ((fb & 7) + 8) << (exponent - 1);
     }
   }
   
@@ -176,11 +193,7 @@ public class Decompiler {
         operations.add(new RegisterSet(line, A, upvalues.getExpression(B)));
         break;
       case GETTABUP:
-        if(B == 0 && (C & 0x100) != 0) {
-          operations.add(new RegisterSet(line, A, f.getGlobalExpression(C & 0xFF))); //TODO: check
-        } else {
-          operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
-        }
+        operations.add(new RegisterSet(line, A, new TableReference(upvalues.getExpression(B), r.getKExpression(C, line))));
         break;
       case GETGLOBAL:
         operations.add(new RegisterSet(line, A, f.getGlobalExpression(Bx)));
@@ -192,11 +205,7 @@ public class Decompiler {
         operations.add(new UpvalueSet(line, upvalues.getName(B), r.getExpression(A, line)));
         break;
       case SETTABUP:
-        if(A == 0 && (B & 0x100) != 0) {
-          operations.add(new GlobalSet(line, f.getGlobalName(B & 0xFF), r.getKExpression(C, line))); //TODO: check
-        } else {
-          operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
-        }
+        operations.add(new TableSet(line, upvalues.getExpression(A), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         break;
       case SETGLOBAL:
         operations.add(new GlobalSet(line, f.getGlobalName(Bx), r.getExpression(A, line)));
@@ -205,7 +214,7 @@ public class Decompiler {
         operations.add(new TableSet(line, r.getExpression(A, line), r.getKExpression(B, line), r.getKExpression(C, line), true, line));
         break;
       case NEWTABLE:
-        operations.add(new RegisterSet(line, A, new TableLiteral(B, C)));
+        operations.add(new RegisterSet(line, A, new TableLiteral(fb2int(B), fb2int(C))));
         break;
       case SELF: {
         // We can later determine is : syntax was used by comparing subexpressions with ==
@@ -542,7 +551,8 @@ public class Decompiler {
       case SETUPVAL:
       case SETGLOBAL:
         return !r.isLocal(code.A(line), line);
-      case SETTABLE: {
+      case SETTABLE:
+      case SETTABUP: {
         int C = code.C(line);
         if(f.isConstant(C)) {
           return false;
@@ -565,6 +575,11 @@ public class Decompiler {
         return new GlobalTarget(f.getGlobalName(code.Bx(line)));
       case SETTABLE:
         return new TableTarget(r.getExpression(code.A(line), previous), r.getKExpression(code.B(line), previous));
+      case SETTABUP: {
+        int A = code.A(line);
+        int B = code.B(line);
+        return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, line));
+      }
       default:
         throw new IllegalStateException();
     }
@@ -581,6 +596,7 @@ public class Decompiler {
       case SETGLOBAL:
         return r.getExpression(A, previous);
       case SETTABLE:
+      case SETTABUP:
         if(f.isConstant(C)) {
           throw new IllegalStateException();
         } else {
@@ -648,7 +664,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);
@@ -665,7 +681,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);
@@ -682,7 +698,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);
@@ -871,7 +887,7 @@ public class Decompiler {
             int begin = stack.peek().begin;
             assignEnd = begin + 2;
             int target = code.A(begin);
-            conditions.push(popCompareSetCondition(stack, assignEnd));
+            conditions.push(popCompareSetCondition(stack, assignEnd, target));
             conditions.peek().setTarget = target;
             conditions.peek().end = assignEnd;
             conditions.peek().begin = begin;
@@ -879,7 +895,7 @@ public class Decompiler {
             backup = null;
             int target = stack.peek().setTarget;
             int begin = stack.peek().begin;
-            conditions.push(popSetCondition(stack, assignEnd));
+            conditions.push(popSetCondition(stack, assignEnd, target));
             conditions.peek().setTarget = target;
             conditions.peek().end = assignEnd;
             conditions.peek().begin = begin;
@@ -900,7 +916,10 @@ public class Decompiler {
           }
           if(breakable && breakTarget == cond.end) {
             Block immediateEnclosing = enclosingBlock(cond.begin);
-            for(int iline = Math.max(cond.end, immediateEnclosing.end - 1); iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
+            Block breakableEnclosing = enclosingBreakableBlock(cond.begin);
+            int loopstart = immediateEnclosing.end;
+            if(immediateEnclosing == breakableEnclosing) loopstart--;
+            for(int iline = loopstart; iline >= Math.max(cond.begin, immediateEnclosing.begin); iline--) {
               if(code.op(iline) == Op.JMP && iline + 1 + code.sBx(iline) == breakTarget) {
                 cond.end = iline;
                 break;
@@ -1114,15 +1133,15 @@ public class Decompiler {
     return branch;
   }
   
-  public Branch popSetCondition(Stack<Branch> stack, int assignEnd) {
+  public Branch popSetCondition(Stack<Branch> stack, int assignEnd, int target) {
     //System.err.println("assign end " + assignEnd);
     stack.push(new AssignNode(assignEnd - 1, assignEnd, assignEnd));
     //Invert argument doesn't matter because begin == end
-    Branch rtn = _helper_popSetCondition(stack, false, assignEnd);
+    Branch rtn = _helper_popSetCondition(stack, false, assignEnd, target);
     return rtn;
   }
   
-  public Branch popCompareSetCondition(Stack<Branch> stack, int assignEnd) {
+  public Branch popCompareSetCondition(Stack<Branch> stack, int assignEnd, int target) {
     Branch top = stack.pop();
     boolean invert = false;
     if(code.B(top.begin) == 0) invert = true;//top = top.invert();
@@ -1132,11 +1151,27 @@ public class Decompiler {
     //stack.pop();
     //stack.push(new AssignNode(assignEnd - 1, assignEnd, assignEnd));
     //Invert argument doesn't matter because begin == end
-    Branch rtn = _helper_popSetCondition(stack, invert, assignEnd);
+    Branch rtn = _helper_popSetCondition(stack, invert, assignEnd, target);
     return rtn;
   }
   
-  private Branch _helper_popSetCondition(Stack<Branch> stack, boolean invert, int assignEnd) {
+  private int _adjustLine(int line, int target) {
+    int testline = line;
+    while(testline >= 1 && code.op(testline) == Op.LOADBOOL && (target == -1 || code.A(testline) == target)) {
+      testline--;
+    }
+    if(testline == line) {
+      return testline;
+    }
+    testline++;
+    if(code.C(testline) != 0) {
+      return testline + 2;
+    } else {
+      return testline + 1;
+    }
+  }
+  
+  private Branch _helper_popSetCondition(Stack<Branch> stack, boolean invert, int assignEnd, int target) {
     Branch branch = stack.pop();
     int begin = branch.begin;
     int end = branch.end;
@@ -1147,37 +1182,21 @@ public class Decompiler {
     if(invert) {
       branch = branch.invert();
     }
-    if(code.op(begin) == Op.LOADBOOL) {
-      if(code.C(begin) != 0) {
-        begin += 2;
-      } else {
-        begin += 1;
-      }
-    }
-    if(code.op(end) == Op.LOADBOOL) {
-      if(code.C(end) != 0) {
-        end += 2;
-      } else {
-        end += 1;
-      }
-    }
+    begin = _adjustLine(begin, target);
+    end = _adjustLine(end, target);
     //System.err.println("_helper_popSetCondition; begin_adj: " + begin);
     //System.err.println("_helper_popSetCondition; end_adj:   " + end);
     //if(count >= 2) System.exit(1);
-    int target = branch.setTarget;
+    int btarget = branch.setTarget;
     while(!stack.isEmpty()) {
       Branch next = stack.peek();
       //System.err.println("_helper_popSetCondition; next begin: " + next.begin);
       //System.err.println("_helper_popSetCondition; next end:   " + next.end);
       boolean ninvert;
       int nend = next.end;
-      if(code.op(next.end) == Op.LOADBOOL) {
-        ninvert = code.B(next.end) != 0;
-        if(code.C(next.end) != 0) {
-          nend += 2;
-        } else {
-          nend += 1;
-        }
+      if(code.op(nend) == Op.LOADBOOL && (target == -1 || code.A(nend) == target)) {
+        ninvert = code.B(nend) != 0;
+        nend = _adjustLine(nend, target);
       } else if(next instanceof TestSetNode) {
         TestSetNode node = (TestSetNode) next;
         ninvert = node.invert;
@@ -1207,9 +1226,9 @@ public class Decompiler {
       if(addr == nend) {
         if(addr != nend) ninvert = !ninvert;
         if(ninvert) {
-          branch = new OrBranch(_helper_popSetCondition(stack, ninvert, assignEnd), branch);
+          branch = new OrBranch(_helper_popSetCondition(stack, ninvert, assignEnd, target), branch);
         } else {
-          branch = new AndBranch(_helper_popSetCondition(stack, ninvert, assignEnd), branch);
+          branch = new AndBranch(_helper_popSetCondition(stack, ninvert, assignEnd, target), branch);
         }
         branch.end = nend;
       } else {
@@ -1222,7 +1241,7 @@ public class Decompiler {
       }
     }
     branch.isSet = true;
-    branch.setTarget = target;
+    branch.setTarget = btarget;
     return branch;
   }
   
