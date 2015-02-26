@@ -648,7 +648,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);
@@ -665,7 +665,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);
@@ -682,7 +682,7 @@ public class Decompiler {
               if(code.C(node.end) != 0) {
                 node.isCompareSet = true;
                 node.setTarget = code.A(node.end);
-              } else if(code.op(node.end - 1) == Op.LOADBOOL) {
+              } else if(node.end - 1 >= 1 && code.op(node.end - 1) == Op.LOADBOOL) {
                 if(code.C(node.end - 1) != 0) {
                   node.isCompareSet = true;
                   node.setTarget = code.A(node.end);

@@ -107,6 +107,7 @@ public class TestFiles {
     "report02d",
     "report02e",
     "report03",
+    "report04",
   };
   
   public static TestSuite suite = new TestSuite(".\\test\\src\\", tests);
