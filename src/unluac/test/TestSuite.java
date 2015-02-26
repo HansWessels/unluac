@@ -21,15 +21,15 @@ public class TestSuite {
     this.path = path;
   }
   
-  private TestResult test(String file) throws IOException {
+  private TestResult test(LuaSpec spec, String file) throws IOException {
     try {
-      LuaC.compile(file, working_dir + compiled);
+      LuaC.compile(spec, file, working_dir + compiled);
     } catch (IOException e) {
       return TestResult.SKIPPED;
     }
     try {
       Main.decompile(working_dir + compiled, working_dir + decompiled);
-      LuaC.compile(working_dir + decompiled, working_dir + recompiled);
+      LuaC.compile(spec, working_dir + decompiled, working_dir + recompiled);
       return Compare.bytecode_equal(working_dir + compiled, working_dir + recompiled) ? TestResult.OK : TestResult.FAILED;
     } catch (IOException e) {
       return TestResult.FAILED;
@@ -39,7 +39,7 @@ public class TestSuite {
     }
   }
   
-  public boolean run() throws IOException {
+  public boolean run(LuaSpec spec) throws IOException {
     int passed = 0;
     int skipped = 0;
     int failed = 0;
@@ -48,9 +48,9 @@ public class TestSuite {
       working.mkdir();
     }
     for(String name : files) {
-      switch (test(path + name + ext)) {
+      switch (test(spec, path + name + ext)) {
         case OK:
-//          System.out.println("Passed: " + name);
+          System.out.println("Passed: " + name);
           passed++;
           break;
         case SKIPPED:
@@ -70,7 +70,7 @@ public class TestSuite {
     return failed == 0;
   }
   
-  public boolean run(String file) throws IOException {
+  public boolean run(LuaSpec spec, String file) throws IOException {
     int passed = 0;
     int skipped = 0;
     int failed = 0;
@@ -80,9 +80,9 @@ public class TestSuite {
     }
     {
       String name = file;
-      switch (test(path + name + ext)) {
+      switch (test(spec, path + name + ext)) {
         case OK:
-//          System.out.println("Passed: " + name);
+          System.out.println("Passed: " + name);
           passed++;
           break;
         case SKIPPED:
