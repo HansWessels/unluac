@@ -8,6 +8,7 @@ public class LFunctionType extends BObjectType<LFunction> {
   public static final LFunctionType TYPE50 = new LFunctionType50();
   public static final LFunctionType TYPE51 = new LFunctionType();
   public static final LFunctionType TYPE52 = new LFunctionType52();
+  public static final LFunctionType TYPE53 = new LFunctionType53();
   
   protected static class LFunctionParseState {
     
@@ -123,6 +124,29 @@ class LFunctionType52 extends LFunctionType {
   protected void parse_debug(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
     s.name = header.string.parse(buffer, header);
     super.parse_debug(buffer, header, s);
+  }
+  
+  protected void parse_upvalues(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
+    BList<LUpvalue> upvalues = header.upvalue.parseList(buffer, header);
+    s.lenUpvalues = upvalues.length.asInt();
+    s.upvalues = upvalues.asArray(new LUpvalue[s.lenUpvalues]);
+  }
+}
+
+class LFunctionType53 extends LFunctionType {
+  
+  protected void parse_main(ByteBuffer buffer, BHeader header, LFunctionParseState s) {
+    s.name = header.string.parse(buffer, header); //TODO: psource
+    s.lineBegin = header.integer.parse(buffer, header).asInt();
+    s.lineEnd = header.integer.parse(buffer, header).asInt();
+    s.lenParameter = 0xFF & buffer.get();
+    s.vararg = 0xFF & buffer.get();
+    s.maximumStackSize = 0xFF & buffer.get();
+    parse_code(buffer, header, s);
+    s.constants = header.constant.parseList(buffer, header);
+    parse_upvalues(buffer, header, s);
+    s.functions = header.function.parseList(buffer, header);
+    parse_debug(buffer, header, s);
   }
   
   protected void parse_upvalues(ByteBuffer buffer, BHeader header, LFunctionParseState s) {

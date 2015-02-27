@@ -20,6 +20,8 @@ public class BHeader {
   public final BSizeTType sizeT;
   public final LBooleanType bool;
   public final LNumberType number;
+  public final LNumberType linteger;
+  public final LNumberType lfloat;
   public final LStringType string;
   public final LConstantType constant;
   public final LLocalType local;
@@ -47,10 +49,13 @@ public class BHeader {
       case 0x52:
         version = Version.LUA52;
         break;
+      case 0x53:
+        version = Version.LUA53;
+        break;
       default: {
         int major = versionNumber >> 4;
         int minor = versionNumber & 0x0F;
-        throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.0 - Lua 5.2.");
+        throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.0 - Lua 5.3.");
       }
     }
     lheader = version.getLHeaderType().parse(buffer, this);
@@ -58,6 +63,8 @@ public class BHeader {
     sizeT = lheader.sizeT;
     bool = lheader.bool;
     number = lheader.number;
+    linteger = lheader.linteger;
+    lfloat = lheader.lfloat;
     string = lheader.string;
     constant = lheader.constant;
     local = lheader.local;

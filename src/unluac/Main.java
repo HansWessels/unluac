@@ -55,6 +55,13 @@ public class Main {
     while(len > 0) len -= in.read(buffer);
     buffer.rewind();
     BHeader header = new BHeader(buffer);
+    if(header.version == Version.LUA53) {
+      int upvalues = 0xFF & buffer.get();
+      if(header.debug) {
+        System.out.println("-- main chunk upvalue count: " + upvalues);
+      }
+      // TODO: check this value
+    }
     return header.function.parse(buffer, header);
   }
   

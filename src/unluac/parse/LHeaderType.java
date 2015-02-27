@@ -2,6 +2,7 @@ package unluac.parse;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import unluac.decompile.Code;
 import unluac.decompile.Code50;
@@ -12,6 +13,7 @@ abstract public class LHeaderType extends BObjectType<LHeader> {
   public static final LHeaderType TYPE50 = new LHeaderType50();
   public static final LHeaderType TYPE51 = new LHeaderType51();
   public static final LHeaderType TYPE52 = new LHeaderType52();
+  public static final LHeaderType TYPE53 = new LHeaderType53();
   
   private static final byte[] luacTail = {
     0x19, (byte) 0x93, 0x0D, 0x0A, 0x1A, 0x0A,
@@ -21,6 +23,10 @@ abstract public class LHeaderType extends BObjectType<LHeader> {
     BIntegerType integer;
     BSizeTType sizeT;
     LNumberType number;
+    LNumberType linteger;
+    LNumberType lfloat;
+    LStringType string;
+    LConstantType constant;
     LFunctionType function;
     CodeExtract extractor;
     
@@ -28,6 +34,9 @@ abstract public class LHeaderType extends BObjectType<LHeader> {
     
     int lNumberSize;
     boolean lNumberIntegrality;
+    
+    int lIntegerSize;
+    int lFloatSize;
   }
   
   @Override
@@ -35,11 +44,9 @@ abstract public class LHeaderType extends BObjectType<LHeader> {
     LHeaderParseState s = new LHeaderParseState();
     parse_main(buffer, header, s);
     LBooleanType bool = new LBooleanType();
-    LStringType string = new LStringType();
-    LConstantType constant = new LConstantType();
     LLocalType local = new LLocalType();
     LUpvalueType upvalue = new LUpvalueType();
-    return new LHeader(s.format, s.integer, s.sizeT, bool, s.number, string, constant, local, upvalue, s.function, s.extractor);
+    return new LHeader(s.format, s.integer, s.sizeT, bool, s.number, s.linteger, s.lfloat, s.string, s.constant, local, upvalue, s.function, s.extractor);
   }
   
   abstract protected void parse_main(ByteBuffer buffer, BHeader header, LHeaderParseState s);
@@ -157,6 +164,8 @@ class LHeaderType50 extends LHeaderType {
     s.number = new LNumberType(s.lNumberSize, false);
     buffer.getDouble();
     s.function = LFunctionType.TYPE50;
+    s.string = LStringType.getType50();
+    s.constant = LConstantType.getType50();
   }
   
 }
@@ -174,6 +183,8 @@ class LHeaderType51 extends LHeaderType {
     parse_number_integrality(buffer, header, s);
     s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality);
     s.function = LFunctionType.TYPE51;
+    s.string = LStringType.getType50();
+    s.constant = LConstantType.getType50();
     s.extractor = Code.Code51;
   }
   
@@ -193,7 +204,62 @@ class LHeaderType52 extends LHeaderType {
     parse_tail(buffer, header, s);
     s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality);
     s.function = LFunctionType.TYPE52;
+    s.string = LStringType.getType50();
+    s.constant = LConstantType.getType50();
     s.extractor = Code.Code51;
+  }
+  
+}
+
+class LHeaderType53 extends LHeaderType {
+  
+  protected void parse_integer_size(ByteBuffer buffer, BHeader header, LHeaderParseState s) {
+    int lIntegerSize = 0xFF & buffer.get();
+    if(header.debug) {
+      System.out.println("-- Lua integer size: " + lIntegerSize);
+    }
+    if(lIntegerSize < 2) {
+      throw new IllegalStateException("The input chunk reports an integer size that is too small: " + lIntegerSize);
+    }
+    s.lIntegerSize = lIntegerSize;
+  }
+  
+  protected void parse_float_size(ByteBuffer buffer, BHeader header, LHeaderParseState s) {
+    int lFloatSize = 0xFF & buffer.get();
+    if(header.debug) {
+      System.out.println("-- Lua float size: " + lFloatSize);
+    }
+    s.lFloatSize = lFloatSize;
+  }
+  
+  @Override
+  protected void parse_main(ByteBuffer buffer, BHeader header, LHeaderParseState s) {
+    parse_format(buffer, header, s);
+    parse_tail(buffer, header, s);
+    parse_int_size(buffer, header, s);
+    parse_size_t_size(buffer, header, s);
+    parse_instruction_size(buffer, header, s);
+    parse_integer_size(buffer, header, s);
+    parse_float_size(buffer, header, s);
+    byte[] endianness = new byte[s.lIntegerSize];
+    buffer.get(endianness);
+    if(endianness[0] == 0x78 && endianness[1] == 0x56) {
+      buffer.order(ByteOrder.LITTLE_ENDIAN);
+    } else if(endianness[s.lIntegerSize - 1] == 0x78 && endianness[s.lIntegerSize - 2] == 0x56) {
+      buffer.order(ByteOrder.BIG_ENDIAN);
+    } else {
+      throw new IllegalStateException("The input chunk reports an invalid endianness: " + Arrays.toString(endianness));
+    }
+    s.linteger = new LNumberType(s.lIntegerSize, true);
+    s.lfloat = new LNumberType(s.lFloatSize, false);
+    s.function = LFunctionType.TYPE53;
+    s.string = LStringType.getType53();
+    s.constant = LConstantType.getType53();
+    s.extractor = Code.Code51;
+    double floatcheck = s.lfloat.parse(buffer, header).value();
+    if(floatcheck != 370.5) {
+      throw new IllegalStateException("The input chunk is using an unrecognized floating point format: " + floatcheck);
+    }
   }
   
 }

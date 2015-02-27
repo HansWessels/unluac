@@ -9,6 +9,7 @@ public abstract class Version {
   public static final Version LUA50 = new Version50();
   public static final Version LUA51 = new Version51();
   public static final Version LUA52 = new Version52();
+  public static final Version LUA53 = new Version53();
   
   protected final int versionNumber;
   
@@ -198,3 +199,57 @@ class Version52 extends Version {
   }
   
 }
+
+class Version53 extends Version {
+  
+  Version53() {
+    super(0x53);
+  }
+  
+  @Override
+  public LHeaderType getLHeaderType() {
+    return LHeaderType.TYPE53;
+  }
+  
+  @Override
+  public int getOuterBlockScopeAdjustment() {
+    return 0;
+  }
+  
+  @Override
+  public boolean usesOldLoadNilEncoding() {
+    return false;
+  }
+  
+  @Override
+  public boolean usesInlineUpvalueDeclarations() {
+    return false;
+  }
+
+  @Override
+  public Op getTForTarget() {
+    return Op.TFORCALL;
+  }
+
+  @Override
+  public Op getForTarget() {
+    return null;
+  }
+
+  @Override
+  public boolean isBreakableLoopEnd(Op op) {
+    return op == Op.JMP || op == Op.FORLOOP || op == Op.TFORLOOP;
+  }
+  
+  @Override
+  public boolean isAllowedPreceedingSemicolon() {
+    return true;
+  }
+  
+  @Override
+  public boolean isEnvironmentTable(String name) {
+    return name.equals("_ENV");
+  }
+  
+}
+
