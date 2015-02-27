@@ -917,7 +917,7 @@ public class Decompiler {
           Stack<Branch> backup = backups.pop();
           int breakTarget = breakTarget(cond.begin);
           boolean breakable = (breakTarget >= 1);
-          if(breakable && code.op(breakTarget) == Op.JMP) {
+          if(breakable && code.op(breakTarget) == Op.JMP && breakTarget != cond.end) {
             breakTarget += 1 + code.sBx(breakTarget);
           }
           if(breakable && breakTarget == cond.end) {
