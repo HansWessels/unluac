@@ -72,6 +72,7 @@ class LStringType53 extends LStringType {
       }
       
     });
+    b.append('\0');
     String s = b.toString();
     if(header.debug) {
       System.out.println("-- parsed <string> \"" + s + "\"");
