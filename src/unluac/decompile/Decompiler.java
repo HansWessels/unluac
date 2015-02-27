@@ -759,7 +759,6 @@ public class Decompiler {
               r.setInternalLoopVariable(A + 1, tline, line + 1);
               r.setInternalLoopVariable(A + 2, tline, line + 1);
               skip[tline] = true;
-              skip[tline+1] = true;
               blocks.add(new ForBlock(function, line + 1, tline + 1, A, r));
             } else if(code.sBx(line) == 2 && code.op(line + 1) == Op.LOADBOOL && code.C(line + 1) != 0) {
               /* This is the tail of a boolean set with a compare node and assign node */
