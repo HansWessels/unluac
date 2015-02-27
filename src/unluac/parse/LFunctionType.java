@@ -139,9 +139,9 @@ class LFunctionType50 extends LFunctionType {
     s.name = header.string.parse(buffer, header);
     s.lineBegin = header.integer.parse(buffer, header).asInt();
     s.lineEnd = 0;
-    int lenUpvalues = 0xFF & buffer.get();
-    s.upvalues = new LUpvalue[lenUpvalues];
-    for(int i = 0; i < lenUpvalues; i++) {
+    s.lenUpvalues = 0xFF & buffer.get();
+    s.upvalues = new LUpvalue[s.lenUpvalues];
+    for(int i = 0; i < s.lenUpvalues; i++) {
       s.upvalues[i] = new LUpvalue();
     }
     s.lenParameter = 0xFF & buffer.get();
