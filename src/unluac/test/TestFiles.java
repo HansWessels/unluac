@@ -109,6 +109,7 @@ public class TestFiles {
     "51_ellipsis",
     "51_adjust02",
     "51_adjust03",
+    "51_method03",
   };
   
   public static TestSuite suite = new TestSuite(".\\test\\src\\", tests);

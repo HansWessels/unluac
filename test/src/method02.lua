@@ -1,7 +1,7 @@
 local x,y
 ;(x+y):print()
 ;("aeiou"):gsub(".",print)
-print((...).x)
+print((arg).x)
 x = (x+y).z
 y = ("asdf").gsub
 ;(-x):print()
