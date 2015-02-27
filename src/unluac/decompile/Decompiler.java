@@ -918,7 +918,7 @@ public class Decompiler {
           Stack<Branch> backup = backups.pop();
           int breakTarget = breakTarget(cond.begin);
           boolean breakable = (breakTarget >= 1);
-          if(breakable && code.op(breakTarget) == Op.JMP && function.header.version != Version.LUA50) {
+          if(breakable && code.op(breakTarget) == Op.JMP) {
             breakTarget += 1 + code.sBx(breakTarget);
           }
           if(breakable && breakTarget == cond.end) {
