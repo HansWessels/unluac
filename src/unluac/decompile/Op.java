@@ -47,6 +47,7 @@ public enum Op {
   TFORCALL(OpcodeFormat.A_C),
   EXTRAARG(OpcodeFormat.Ax),
   // Lua 5.0 Opcodes
+  NEWTABLE50(OpcodeFormat.A_B_C),
   SETLIST50(OpcodeFormat.A_B_C),
   SETLISTO(OpcodeFormat.A_Bx),
   TFORPREP(OpcodeFormat.A_sBx),

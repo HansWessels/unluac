@@ -17,7 +17,7 @@ public class OpcodeMap {
       map[7] = Op.SETGLOBAL;
       map[8] = Op.SETUPVAL;
       map[9] = Op.SETTABLE;
-      map[10] = Op.NEWTABLE;
+      map[10] = Op.NEWTABLE50;
       map[11] = Op.SELF;
       map[12] = Op.ADD;
       map[13] = Op.SUB;

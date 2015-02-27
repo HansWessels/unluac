@@ -151,6 +151,10 @@ public class Decompiler {
     }
   }
   
+  private int fb2int50(int fb) {
+    return (fb & 7) << (fb >> 3);
+  }
+  
   private int fb2int(int fb) {
     int exponent = (fb >> 3) & 0x1f;
     if(exponent == 0) {
@@ -215,6 +219,9 @@ public class Decompiler {
         break;
       case NEWTABLE:
         operations.add(new RegisterSet(line, A, new TableLiteral(fb2int(B), fb2int(C))));
+        break;
+      case NEWTABLE50:
+        operations.add(new RegisterSet(line, A, new TableLiteral(fb2int50(B), 1 << C)));
         break;
       case SELF: {
         // We can later determine is : syntax was used by comparing subexpressions with ==
@@ -1259,6 +1266,7 @@ public class Decompiler {
       case GETGLOBAL:
       case GETTABLE:
       case NEWTABLE:
+      case NEWTABLE50:
       case ADD:
       case SUB:
       case MUL:
@@ -1348,6 +1356,7 @@ public class Decompiler {
       case GETGLOBAL:
       case GETTABLE:
       case NEWTABLE:
+      case NEWTABLE50:
       case ADD:
       case SUB:
       case MUL:

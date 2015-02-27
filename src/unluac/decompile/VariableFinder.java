@@ -76,6 +76,7 @@ public class VariableFinder {
         case GETUPVAL:
         case GETGLOBAL:
         case NEWTABLE:
+        case NEWTABLE50:
           states.get(code.A(line), line).written = true;
           break;
         case LOADNIL:
