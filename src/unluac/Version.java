@@ -2,7 +2,7 @@ package unluac;
 
 import unluac.decompile.Op;
 import unluac.decompile.OpcodeMap;
-import unluac.parse.LFunctionType;
+import unluac.parse.LHeaderType;
 
 public abstract class Version {
 
@@ -16,11 +16,7 @@ public abstract class Version {
     this.versionNumber = versionNumber;
   }
   
-  public abstract boolean hasHeaderTail();
-  
-  public abstract boolean hasFormat();
-
-  public abstract LFunctionType getLFunctionType();
+  public abstract LHeaderType getLHeaderType();
   
   public OpcodeMap getOpcodeMap() {
     return new OpcodeMap(versionNumber);
@@ -51,18 +47,8 @@ class Version50 extends Version {
   }
 
   @Override
-  public boolean hasHeaderTail() {
-    return false;
-  }
-
-  @Override
-  public boolean hasFormat() {
-    return false;
-  }
-
-  @Override
-  public LFunctionType getLFunctionType() {
-    return LFunctionType.TYPE50;
+  public LHeaderType getLHeaderType() {
+    return LHeaderType.TYPE50;
   }
 
   @Override
@@ -114,18 +100,8 @@ class Version51 extends Version {
   }
   
   @Override
-  public boolean hasHeaderTail() {
-    return false;
-  }
-  
-  @Override
-  public boolean hasFormat() {
-    return true;
-  }
-
-  @Override
-  public LFunctionType getLFunctionType() {
-    return LFunctionType.TYPE51;
+  public LHeaderType getLHeaderType() {
+    return LHeaderType.TYPE51;
   }
   
   @Override
@@ -177,18 +153,8 @@ class Version52 extends Version {
   }
   
   @Override
-  public boolean hasHeaderTail() {
-    return true;
-  }
-  
-  @Override
-  public boolean hasFormat() {
-    return true;
-  }
-
-  @Override
-  public LFunctionType getLFunctionType() {
-    return LFunctionType.TYPE52;
+  public LHeaderType getLHeaderType() {
+    return LHeaderType.TYPE52;
   }
   
   @Override

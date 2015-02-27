@@ -12,6 +12,7 @@ import unluac.decompile.Output;
 import unluac.decompile.OutputProvider;
 import unluac.parse.BHeader;
 import unluac.parse.LFunction;
+import unluac.parse.LHeader;
 
 public class Main {
 
