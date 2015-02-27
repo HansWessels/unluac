@@ -82,7 +82,7 @@ public class OpcodeMap {
       map[35] = Op.CLOSE;
       map[36] = Op.CLOSURE;
       map[37] = Op.VARARG;
-    } else {
+    } else if(version == 0x52) {
       map = new Op[40];
       map[0] = Op.MOVE;
       map[1] = Op.LOADK;
@@ -124,6 +124,55 @@ public class OpcodeMap {
       map[37] = Op.CLOSURE;
       map[38] = Op.VARARG;
       map[39] = Op.EXTRAARG;
+    } else {
+      map = new Op[47];
+      map[0] = Op.MOVE;
+      map[1] = Op.LOADK;
+      map[2] = Op.LOADKX;
+      map[3] = Op.LOADBOOL;
+      map[4] = Op.LOADNIL;
+      map[5] = Op.GETUPVAL;
+      map[6] = Op.GETTABUP;
+      map[7] = Op.GETTABLE;
+      map[8] = Op.SETTABUP;
+      map[9] = Op.SETUPVAL;
+      map[10] = Op.SETTABLE;
+      map[11] = Op.NEWTABLE;
+      map[12] = Op.SELF;
+      map[13] = Op.ADD;
+      map[14] = Op.SUB;
+      map[15] = Op.MUL;
+      map[16] = Op.MOD;
+      map[17] = Op.POW;
+      map[18] = Op.DIV;
+      map[19] = Op.IDIV;
+      map[20] = Op.BAND;
+      map[21] = Op.BOR;
+      map[22] = Op.BXOR;
+      map[23] = Op.SHL;
+      map[24] = Op.SHR;
+      map[25] = Op.UNM;
+      map[26] = Op.BNOT;
+      map[27] = Op.NOT;
+      map[28] = Op.LEN;
+      map[29] = Op.CONCAT;
+      map[30] = Op.JMP;
+      map[31] = Op.EQ;
+      map[32] = Op.LT;
+      map[33] = Op.LE;
+      map[34] = Op.TEST;
+      map[35] = Op.TESTSET;
+      map[36] = Op.CALL;
+      map[37] = Op.TAILCALL;
+      map[38] = Op.RETURN;
+      map[39] = Op.FORLOOP;
+      map[40] = Op.FORPREP;
+      map[41] = Op.TFORCALL;
+      map[42] = Op.TFORLOOP;
+      map[43] = Op.SETLIST;
+      map[44] = Op.CLOSURE;
+      map[45] = Op.VARARG;
+      map[46] = Op.EXTRAARG;
     }
   }
   
