@@ -152,6 +152,8 @@ abstract public class LHeaderType extends BObjectType<LHeader> {
 
 class LHeaderType50 extends LHeaderType {
   
+  private static final double TEST_NUMBER = 3.14159265358979323846E7;
+  
   @Override
   protected void parse_main(ByteBuffer buffer, BHeader header, LHeaderParseState s) {
     s.format = 0;
@@ -162,7 +164,10 @@ class LHeaderType50 extends LHeaderType {
     parse_extractor(buffer, header, s);
     parse_number_size(buffer, header, s);
     s.number = new LNumberType(s.lNumberSize, false);
-    buffer.getDouble();
+    double numbercheck = s.number.parse(buffer, header).value();
+    if(numbercheck != s.number.convert(TEST_NUMBER)) {
+      throw new IllegalStateException("The input chunk is using an unrecognized number format: " + numbercheck);
+    }
     s.function = LFunctionType.TYPE50;
     s.string = LStringType.getType50();
     s.constant = LConstantType.getType50();
@@ -257,7 +262,7 @@ class LHeaderType53 extends LHeaderType {
     s.constant = LConstantType.getType53();
     s.extractor = Code.Code51;
     double floatcheck = s.lfloat.parse(buffer, header).value();
-    if(floatcheck != 370.5) {
+    if(floatcheck != s.lfloat.convert(370.5)) {
       throw new IllegalStateException("The input chunk is using an unrecognized floating point format: " + floatcheck);
     }
   }

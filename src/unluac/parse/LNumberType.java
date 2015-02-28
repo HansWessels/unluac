@@ -16,6 +16,25 @@ public class LNumberType extends BObjectType<LNumber> {
     }
   }
   
+  public double convert(double number) {
+    if(integral) {
+      switch(size) {
+        case 4:
+          return (int)number;
+        case 8:
+          return (long)number;
+      }
+    } else {
+      switch(size) {
+        case 4:
+          return (float)number;
+        case 8:
+          return number;
+      }
+    }
+    throw new IllegalStateException("The input chunk has an unsupported Lua number format");
+  }
+  
   @Override
   public LNumber parse(ByteBuffer buffer, BHeader header) {
     LNumber value = null;
@@ -26,6 +45,7 @@ public class LNumberType extends BObjectType<LNumber> {
           break;
         case 8:
           value = new LLongNumber(buffer.getLong());
+          break;
       }
     } else {
       switch(size) {
