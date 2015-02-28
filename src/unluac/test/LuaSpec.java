@@ -10,11 +10,13 @@ public class LuaSpec {
   public LuaSpec() {
     this.isDefault = true;
     this.version = 0;
+    this.numberFormat = NumberFormat.DEFAULT;
   }
   
   public LuaSpec(int version) {
     this.isDefault = false;
     this.version = version;
+    this.numberFormat = NumberFormat.DEFAULT;
   }
   
   public void setNumberFormat(NumberFormat format) {
