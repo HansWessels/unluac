@@ -163,10 +163,18 @@ class LHeaderType50 extends LHeaderType {
     parse_instruction_size(buffer, header, s);
     parse_extractor(buffer, header, s);
     parse_number_size(buffer, header, s);
-    s.number = new LNumberType(s.lNumberSize, false);
-    double numbercheck = s.number.parse(buffer, header).value();
-    if(numbercheck != s.number.convert(TEST_NUMBER)) {
-      throw new IllegalStateException("The input chunk is using an unrecognized number format: " + numbercheck);
+    LNumberType lfloat = new LNumberType(s.lNumberSize, false);
+    LNumberType linteger = new LNumberType(s.lNumberSize, true);
+    buffer.mark();
+    double floatcheck = lfloat.parse(buffer, header).value();
+    buffer.reset();
+    double intcheck = linteger.parse(buffer, header).value();
+    if(floatcheck == lfloat.convert(TEST_NUMBER)) {
+      s.number = lfloat;
+    } else if(intcheck == linteger.convert(TEST_NUMBER)) {
+      s.number = linteger;
+    } else {
+      throw new IllegalStateException("The input chunk is using an unrecognized number format: " + intcheck);
     }
     s.function = LFunctionType.TYPE50;
     s.string = LStringType.getType50();
