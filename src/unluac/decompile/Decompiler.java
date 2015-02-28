@@ -248,6 +248,24 @@ public class Decompiler {
       case POW:
         operations.add(new RegisterSet(line, A, Expression.makePOW(r.getKExpression(B, line), r.getKExpression(C, line))));
         break;
+      case IDIV:
+        operations.add(new RegisterSet(line, A, Expression.makeIDIV(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
+      case BAND:
+        operations.add(new RegisterSet(line, A, Expression.makeBAND(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
+      case BOR:
+        operations.add(new RegisterSet(line, A, Expression.makeBOR(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
+      case BXOR:
+        operations.add(new RegisterSet(line, A, Expression.makeBXOR(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
+      case SHL:
+        operations.add(new RegisterSet(line, A, Expression.makeSHL(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
+      case SHR:
+        operations.add(new RegisterSet(line, A, Expression.makeSHR(r.getKExpression(B, line), r.getKExpression(C, line))));
+        break;
       case UNM:
         operations.add(new RegisterSet(line, A, Expression.makeUNM(r.getExpression(B, line))));
         break;
@@ -256,6 +274,9 @@ public class Decompiler {
         break;
       case LEN:
         operations.add(new RegisterSet(line, A, Expression.makeLEN(r.getExpression(B, line))));
+        break;
+      case BNOT:
+        operations.add(new RegisterSet(line, A, Expression.makeBNOT(r.getExpression(B, line))));
         break;
       case CONCAT: {
         Expression value = r.getExpression(C, line);
@@ -1275,6 +1296,13 @@ public class Decompiler {
       case UNM:
       case NOT:
       case LEN:
+      case IDIV:
+      case BAND:
+      case BOR:
+      case BXOR:
+      case SHL:
+      case SHR:
+      case BNOT:
       case CONCAT:
       case CLOSURE:
         return r.isLocal(code.A(line), line) || code.A(line) == testRegister;
@@ -1365,6 +1393,13 @@ public class Decompiler {
       case UNM:
       case NOT:
       case LEN:
+      case IDIV:
+      case BAND:
+      case BOR:
+      case BXOR:
+      case SHL:
+      case SHR:
+      case BNOT:
       case CONCAT:
       case CLOSURE:
         return code.A(line);
