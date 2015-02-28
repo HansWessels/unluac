@@ -12,7 +12,6 @@ import unluac.decompile.Output;
 import unluac.decompile.OutputProvider;
 import unluac.parse.BHeader;
 import unluac.parse.LFunction;
-import unluac.parse.LHeader;
 
 public class Main {
 
@@ -55,14 +54,7 @@ public class Main {
     while(len > 0) len -= in.read(buffer);
     buffer.rewind();
     BHeader header = new BHeader(buffer);
-    if(header.version == Version.LUA53) {
-      int upvalues = 0xFF & buffer.get();
-      if(header.debug) {
-        System.out.println("-- main chunk upvalue count: " + upvalues);
-      }
-      // TODO: check this value
-    }
-    return header.function.parse(buffer, header);
+    return header.main;
   }
   
   public static void decompile(String in, String out) throws IOException {

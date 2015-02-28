@@ -106,7 +106,7 @@ public class Compare {
       while(len > 0) len -= in.read(buffer);
       buffer.rewind();
       BHeader header = new BHeader(buffer);
-      return header.function.parse(buffer, header);
+      return header.main;
     } catch(IOException e) {
       return null;
     }

@@ -29,6 +29,8 @@ public class BHeader {
   public final LFunctionType function;
   public final CodeExtract extractor;
   
+  public final LFunction main;
+  
   public BHeader(ByteBuffer buffer) {
     // 4 byte Lua signature
     for(int i = 0; i < signature.length; i++) {
@@ -71,6 +73,21 @@ public class BHeader {
     upvalue = lheader.upvalue;
     function = lheader.function;
     extractor = lheader.extractor;
+    
+    int upvalues = -1;
+    if(versionNumber >= 0x53) {
+      upvalues = 0xFF & buffer.get();
+      if(debug) {
+        System.out.println("-- main chunk upvalue count: " + upvalues);
+      }
+      // TODO: check this value
+    }
+    main = function.parse(buffer, this);
+    if(upvalues >= 0) {
+      if(main.numUpvalues != upvalues) {
+        throw new IllegalStateException("The main chunk has the wrong number of upvalues: " + main.numUpvalues + " (" + upvalues + " expected)");
+      }
+    }
   }
   
 }
