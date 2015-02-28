@@ -5,6 +5,8 @@ public class LuaSpec {
   public enum NumberFormat {
     DEFAULT,
     FLOAT,
+    INT32,
+    INT64
   }
   
   public LuaSpec() {
@@ -41,6 +43,10 @@ public class LuaSpec {
         return "";
       case FLOAT:
         return "_float";
+      case INT32:
+        return "_int32";
+      case INT64:
+        return "_int64";
       default:
         throw new IllegalStateException();
     }
