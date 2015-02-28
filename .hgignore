@@ -4,3 +4,5 @@ bin
 build
 luac
 test/working
+*.orig
+*.rej
