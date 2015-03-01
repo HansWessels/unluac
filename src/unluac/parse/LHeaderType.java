@@ -163,8 +163,8 @@ class LHeaderType50 extends LHeaderType {
     parse_instruction_size(buffer, header, s);
     parse_extractor(buffer, header, s);
     parse_number_size(buffer, header, s);
-    LNumberType lfloat = new LNumberType(s.lNumberSize, false);
-    LNumberType linteger = new LNumberType(s.lNumberSize, true);
+    LNumberType lfloat = new LNumberType(s.lNumberSize, false, LNumberType.NumberMode.MODE_NUMBER);
+    LNumberType linteger = new LNumberType(s.lNumberSize, true, LNumberType.NumberMode.MODE_NUMBER);
     buffer.mark();
     double floatcheck = lfloat.parse(buffer, header).value();
     buffer.reset();
@@ -194,7 +194,7 @@ class LHeaderType51 extends LHeaderType {
     parse_instruction_size(buffer, header, s);
     parse_number_size(buffer, header, s);
     parse_number_integrality(buffer, header, s);
-    s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality);
+    s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality, LNumberType.NumberMode.MODE_NUMBER);
     s.function = LFunctionType.TYPE51;
     s.string = LStringType.getType50();
     s.constant = LConstantType.getType50();
@@ -215,7 +215,7 @@ class LHeaderType52 extends LHeaderType {
     parse_number_size(buffer, header, s);
     parse_number_integrality(buffer, header, s);
     parse_tail(buffer, header, s);
-    s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality);
+    s.number = new LNumberType(s.lNumberSize, s.lNumberIntegrality, LNumberType.NumberMode.MODE_NUMBER);
     s.function = LFunctionType.TYPE52;
     s.string = LStringType.getType50();
     s.constant = LConstantType.getType50();
@@ -263,8 +263,8 @@ class LHeaderType53 extends LHeaderType {
     } else {
       throw new IllegalStateException("The input chunk reports an invalid endianness: " + Arrays.toString(endianness));
     }
-    s.linteger = new LNumberType(s.lIntegerSize, true);
-    s.lfloat = new LNumberType(s.lFloatSize, false);
+    s.linteger = new LNumberType(s.lIntegerSize, true, LNumberType.NumberMode.MODE_INTEGER);
+    s.lfloat = new LNumberType(s.lFloatSize, false, LNumberType.NumberMode.MODE_FLOAT);
     s.function = LFunctionType.TYPE53;
     s.string = LStringType.getType53();
     s.constant = LConstantType.getType53();
