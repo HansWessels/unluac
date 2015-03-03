@@ -42,6 +42,9 @@ public class LFunctionType extends BObjectType<LFunction> {
     for(LFunction child : lfunc.functions) {
       child.parent = lfunc;
     }
+    if(s.lines.length.asInt() == 0 && s.locals.length.asInt() == 0) {
+      lfunc.stripped = true;
+    }
     return lfunc;
   }
   

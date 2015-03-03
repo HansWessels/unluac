@@ -81,21 +81,18 @@ public class Decompiler {
     registers = function.maximumStackSize;
     length = function.code.length;
     code = new Code(function);
-    if(function.locals.length >= function.numParams) {
+    if(function.stripped) {
+      declList = VariableFinder.process(this, function.numParams, function.maximumStackSize);
+    } else if(function.locals.length >= function.numParams) {
       declList = new Declaration[function.locals.length];
       for(int i = 0; i < declList.length; i++) {
         declList[i] = new Declaration(function.locals[i]);
       }
     } else {
-      //TODO: debug info missing;
-      /*
       declList = new Declaration[function.numParams];
       for(int i = 0; i < declList.length; i++) {
         declList[i] = new Declaration("_ARG_" + i + "_", 0, length - 1);
       }
-      */
-      declList = VariableFinder.process(this, function.numParams, function.maximumStackSize);
-      
     }
     upvalues = new Upvalues(function, function.upvalues);
     functions = function.functions;
