@@ -21,7 +21,7 @@ public class Upvalues {
   }
   
   public String getName(int index) {
-    if(index < upvalues.length && upvalues[index].name != null) {
+    if(index < upvalues.length && upvalues[index].name != null && !upvalues[index].name.isEmpty()) {
       return upvalues[index].name;
     } else {
       //TODO: SET ERROR
