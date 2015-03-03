@@ -76,6 +76,10 @@ public class Decompiler {
   private final Op forTarget;
   
   public Decompiler(LFunction function) {
+    this(function, null, -1);
+  }
+  
+  public Decompiler(LFunction function, Declaration[] parentDecls, int line) {
     this.f = new Function(function);
     this.function = function;
     registers = function.maximumStackSize;
@@ -94,7 +98,7 @@ public class Decompiler {
         declList[i] = new Declaration("_ARG_" + i + "_", 0, length - 1);
       }
     }
-    upvalues = new Upvalues(function, function.upvalues);
+    upvalues = new Upvalues(function, parentDecls, line);
     functions = function.functions;
     params = function.numParams;
     vararg = function.vararg;

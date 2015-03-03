@@ -8,13 +8,24 @@ public class Upvalues {
 
   private final LUpvalue[] upvalues;
   
-  public Upvalues(LFunction func, LUpvalue[] upvalues) {
-    this.upvalues = upvalues;
+  public Upvalues(LFunction func, Declaration[] parentDecls, int line) {
+    this.upvalues = func.upvalues;
     for(LUpvalue upvalue : upvalues) {
-      if(upvalue.name.isEmpty() && !upvalue.instack) {
-        LUpvalue[] parentvals = func.parent.upvalues;
-        if(upvalue.idx >= 0 && upvalue.idx < parentvals.length) {
-          upvalue.name = parentvals[upvalue.idx].name;
+      if(upvalue.name == null || upvalue.name.isEmpty()) {
+        if(upvalue.instack) {
+          if(parentDecls != null) {
+            for(Declaration decl : parentDecls) {
+              if(decl.register == upvalue.idx && line >= decl.begin && line < decl.end) {
+                upvalue.name = decl.name;
+                break;
+              }
+            }
+          }
+        } else {
+          LUpvalue[] parentvals = func.parent.upvalues;
+          if(upvalue.idx >= 0 && upvalue.idx < parentvals.length) {
+            upvalue.name = parentvals[upvalue.idx].name;
+          }
         }
       }
     }

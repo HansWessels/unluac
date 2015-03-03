@@ -59,14 +59,14 @@ public class ClosureExpression extends Expression {
   
   @Override
   public void print(Decompiler outer, Output out) {
-    Decompiler d = new Decompiler(function);
+    Decompiler d = new Decompiler(function, outer.declList, upvalueLine);
     out.print("function");
     printMain(out, d, true);
   }
   
   @Override
   public void printClosure(Decompiler outer, Output out, Target name) {
-    Decompiler d = new Decompiler(function);
+    Decompiler d = new Decompiler(function, outer.declList, upvalueLine);
     out.print("function ");
     if(function.numParams >= 1 && d.declList[0].name.equals("self") && name instanceof TableTarget) {
       name.printMethod(outer, out);
