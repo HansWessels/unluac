@@ -3,6 +3,9 @@ package unluac.decompile;
 import java.util.ArrayList;
 import java.util.List;
 
+import unluac.parse.LFunction;
+import unluac.parse.LUpvalue;
+
 public class VariableFinder {
 
   static class RegisterState {
@@ -141,6 +144,15 @@ public class VariableFinder {
           states.get(code.A(line), line).written = true;
           states.get(code.B(line), line).read = true;
           break;
+        case CLOSURE: {
+          LFunction f = d.function.functions[code.Bx(line)];
+          for(LUpvalue upvalue : f.upvalues) {
+            if(upvalue.instack) {
+              states.setLocal(upvalue.idx, line);
+            }
+          }
+          break;
+        }
         case CALL:
         case TAILCALL: {
           int B = code.B(line);
