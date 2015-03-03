@@ -3,6 +3,7 @@ package unluac.parse;
 public class LFunction extends BObject {
   
   public BHeader header;
+  public LFunction parent;
   public int[] code;
   public LLocal[] locals;
   public LObject[] constants;

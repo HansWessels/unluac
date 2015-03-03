@@ -38,7 +38,11 @@ public class LFunctionType extends BObjectType<LFunction> {
     }
     LFunctionParseState s = new LFunctionParseState();
     parse_main(buffer, header, s);
-    return new LFunction(header, s.code, s.locals.asArray(new LLocal[s.locals.length.asInt()]), s.constants.asArray(new LObject[s.constants.length.asInt()]), s.upvalues, s.functions.asArray(new LFunction[s.functions.length.asInt()]), s.maximumStackSize, s.lenUpvalues, s.lenParameter, s.vararg);
+    LFunction lfunc = new LFunction(header, s.code, s.locals.asArray(new LLocal[s.locals.length.asInt()]), s.constants.asArray(new LObject[s.constants.length.asInt()]), s.upvalues, s.functions.asArray(new LFunction[s.functions.length.asInt()]), s.maximumStackSize, s.lenUpvalues, s.lenParameter, s.vararg);
+    for(LFunction child : lfunc.functions) {
+      child.parent = lfunc;
+    }
+    return lfunc;
   }
   
   protected void parse_main(ByteBuffer buffer, BHeader header, LFunctionParseState s) {

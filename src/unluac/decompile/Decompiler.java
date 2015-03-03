@@ -97,7 +97,7 @@ public class Decompiler {
       declList = VariableFinder.process(this, function.numParams, function.maximumStackSize);
       
     }
-    upvalues = new Upvalues(function.upvalues);
+    upvalues = new Upvalues(function, function.upvalues);
     functions = function.functions;
     params = function.numParams;
     vararg = function.vararg;
