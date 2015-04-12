@@ -21,12 +21,12 @@ public class ConstantExpression extends Expression {
   
   @Override
   public void print(Decompiler d, Output out) {
-    constant.print(out, false);
+    constant.print(d, out, false);
   }
   
   @Override
   public void printBraced(Decompiler d, Output out) {
-    constant.print(out, true);
+    constant.print(d, out, true);
   }
   
   @Override

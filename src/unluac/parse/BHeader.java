@@ -2,6 +2,7 @@ package unluac.parse;
 
 import java.nio.ByteBuffer;
 
+import unluac.Configuration;
 import unluac.Version;
 import unluac.decompile.CodeExtract;
 
@@ -14,6 +15,7 @@ public class BHeader {
   
   public final boolean debug = false;
   
+  public final Configuration config;
   public final Version version;
   public final LHeader lheader;
   public final BIntegerType integer;
@@ -31,7 +33,8 @@ public class BHeader {
   
   public final LFunction main;
   
-  public BHeader(ByteBuffer buffer) {
+  public BHeader(ByteBuffer buffer, Configuration config) {
+    this.config = config;
     // 4 byte Lua signature
     for(int i = 0; i < signature.length; i++) {
       if(buffer.get() != signature[i]) {

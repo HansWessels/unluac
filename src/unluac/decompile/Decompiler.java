@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import unluac.Configuration;
 import unluac.Version;
 import unluac.decompile.block.AlwaysLoop;
 import unluac.decompile.block.Block;
@@ -104,6 +105,10 @@ public class Decompiler {
     vararg = function.vararg;
     tforTarget = function.header.version.getTForTarget();
     forTarget = function.header.version.getForTarget();
+  }
+  
+  public Configuration getConfiguration() {
+    return function.header.config;
   }
   
   public Version getVersion() {

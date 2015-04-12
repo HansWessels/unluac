@@ -76,7 +76,7 @@ public class Constant {
     }
   }
   
-  public void print(Output out, boolean braced) {
+  public void print(Decompiler d, Output out, boolean braced) {
     switch(type) {
       case 0:
         out.print("nil");
@@ -90,6 +90,7 @@ public class Constant {
       case 3:
         int newlines = 0;
         int unprintable = 0;
+        boolean rawstring = d.getConfiguration().rawstring;
         for(int i = 0; i < string.length(); i++) {
           char c = string.charAt(i);
           if(c == '\n') {
@@ -138,7 +139,7 @@ public class Constant {
                 out.print("\\t");
               } else if(c == 11) {
                 out.print("\\v");
-              } else {
+              } else if(!rawstring || c <= 127) {
                 String dec = Integer.toString(c);
                 int len = dec.length();
                 out.print("\\");
@@ -146,6 +147,8 @@ public class Constant {
                   out.print("0");
                 }
                 out.print(dec);
+              } else {
+                out.print((byte)c);
               }
             } else if(c == 34) {
               out.print("\\\"");

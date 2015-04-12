@@ -18,25 +18,30 @@ public class Main {
   public static String version = "1.2.2.118";
   
   public static void main(String[] args) {
-    if(args.length == 0 || args.length > 1) {
-      System.err.println("unluac v" + version);
-      if(args.length == 0) {
-        System.err.println("  error: no input file provided");
+    String fn = null;
+    Configuration config = new Configuration();
+    for(String arg : args) {
+      if(arg.startsWith("-")) {
+        // option
+        if(arg.equals("--rawstring")) {
+          config.rawstring = true;
+        } else {
+          error("unrecognized option: " + arg, true);
+        }
+      } else if(fn == null) {
+        fn = arg;
       } else {
-        System.err.println("  error: too many arguments");
+        error("too many arguments: " + arg, true);
       }
-      System.err.println("  usage: java -jar unluac.jar <file>");
-      System.exit(1);
+    }
+    if(fn == null) {
+      error("no input file provided", true);
     } else {
-      String fn = args[0];
       LFunction lmain = null;
       try {
-        lmain = file_to_function(fn);
+        lmain = file_to_function(fn, config);
       } catch(IOException e) {
-        System.err.println("unluac v" + version);
-        System.err.print("  error: ");
-        System.err.println(e.getMessage());
-        System.exit(1);
+        error(e.getMessage(), false);
       }
       Decompiler d = new Decompiler(lmain);
       d.decompile();
@@ -45,7 +50,17 @@ public class Main {
     }
   }
   
-  private static LFunction file_to_function(String fn) throws IOException {
+  private static void error(String err, boolean usage) {
+    System.err.println("unluac v" + version);
+    System.err.print("  error: ");
+    System.err.println(err);
+    if(usage) {
+      System.err.println("  usage: java -jar unluac.jar [options] <file>");
+    }
+    System.exit(1);
+  }
+  
+  private static LFunction file_to_function(String fn, Configuration config) throws IOException {
     RandomAccessFile file = new RandomAccessFile(fn, "r");
     ByteBuffer buffer = ByteBuffer.allocate((int) file.length());
     buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -53,12 +68,12 @@ public class Main {
     FileChannel in = file.getChannel();
     while(len > 0) len -= in.read(buffer);
     buffer.rewind();
-    BHeader header = new BHeader(buffer);
+    BHeader header = new BHeader(buffer, config);
     return header.main;
   }
   
   public static void decompile(String in, String out) throws IOException {
-    LFunction lmain = file_to_function(in);
+    LFunction lmain = file_to_function(in, new Configuration());
     Decompiler d = new Decompiler(lmain);
     d.decompile();
     final PrintStream pout = new PrintStream(out);
@@ -67,6 +82,11 @@ public class Main {
       @Override
       public void print(String s) {
         pout.print(s);
+      }
+      
+      @Override
+      public void print(byte b) {
+        pout.print(b);
       }
 
       @Override
