@@ -3,6 +3,7 @@ package unluac.decompile.block;
 import java.util.ArrayList;
 import java.util.List;
 
+import unluac.Version;
 import unluac.decompile.Output;
 import unluac.decompile.Registers;
 import unluac.decompile.expression.Expression;
@@ -55,9 +56,17 @@ public class ForBlock extends Block {
   @Override
   public void print(Output out) {
     out.print("for ");
-    r.getTarget(register + 3, begin - 1).print(out);
+    if (function.header.version == Version.LUA50) {
+      r.getTarget(register, begin - 1).print(out);
+    } else {
+      r.getTarget(register + 3, begin - 1).print(out);
+    }
     out.print(" = ");
-    r.getValue(register, begin - 1).print(out);
+    if(function.header.version == Version.LUA50) {
+      r.getValue(register, begin - 2).print(out);
+    } else {
+      r.getValue(register, begin - 1).print(out);
+    }
     out.print(", ");
     r.getValue(register + 1, begin - 1).print(out);
     Expression step = r.getValue(register + 2, begin - 1);

@@ -7,11 +7,9 @@ import java.io.InputStreamReader;
 public class LuaC {
 
   public static void compile(String in, String out) throws IOException {
-    String luac;
+    String luac = System.getProperty("luac", "luac");
     if(System.getProperty("os.name").contains("Windows")) {
-      luac = "luac.exe";
-    } else {
-      luac = "luac";
+      luac = luac + ".exe";
     }
     ProcessBuilder pb = new ProcessBuilder(luac, "-o", out, in);
     pb.directory(null);
@@ -29,13 +27,13 @@ public class LuaC {
               System.err.println(line);
             }
           } while(line != null);
-            
+
           throw new IOException("luac failed on file: " + in);
         }
       } catch(InterruptedException e ) {
-        
+
       }
-    } 
+    }
   }
-  
+
 }

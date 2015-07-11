@@ -33,7 +33,7 @@ public class LENode extends Branch {
     boolean transpose = false;
     Expression leftExpression = r.getKExpression(left, line);
     Expression rightExpression = r.getKExpression(right, line);
-    if(((left | right) & 256) == 0) {
+    if(!leftExpression.isConstant() && !rightExpression.isConstant()) {
       transpose = r.getUpdated(left, line) > r.getUpdated(right, line);
     } else {
       transpose = rightExpression.getConstantIndex() < leftExpression.getConstantIndex();

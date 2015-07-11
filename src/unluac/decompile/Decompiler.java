@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import unluac.Version;
 import unluac.decompile.block.AlwaysLoop;
 import unluac.decompile.block.Block;
 import unluac.decompile.block.BooleanIndicator;
@@ -72,6 +73,7 @@ public class Decompiler {
   private final int vararg;
   
   private final Op tforTarget;
+  private final Op forTarget;
   
   public Decompiler(LFunction function) {
     this.f = new Function(function);
@@ -96,6 +98,7 @@ public class Decompiler {
     params = function.numParams;
     vararg = function.vararg;
     tforTarget = function.header.version.getTForTarget();
+    forTarget = function.header.version.getForTarget();
   }
   
   private Registers r;
@@ -253,6 +256,7 @@ public class Decompiler {
       case LE:
       case TEST:
       case TESTSET:
+      case TEST50:
         /* Do nothing ... handled with branches */
         break;
       case CALL: {
@@ -301,10 +305,20 @@ public class Decompiler {
       }
       case FORLOOP:
       case FORPREP:
+      case TFORPREP:
       case TFORCALL:
       case TFORLOOP:
         /* Do nothing ... handled with branches */
         break;
+      case SETLIST50:
+      case SETLISTO: {
+        Expression table = r.getValue(A, line);
+        int n = Bx % 32;
+        for(int i = 1; i <= n + 1; i++) {
+          operations.add(new TableSet(line, table, new ConstantExpression(new Constant(Bx - n + i), -1), r.getExpression(A + i, line), false, r.getUpdated(A + i, line)));
+        }
+        break;
+      }
       case SETLIST: {
         if(C == 0) {
           C = code.codepoint(line + 1);
@@ -469,6 +483,9 @@ public class Decompiler {
           if(count > 0) {
             block.addStatement(assign);
           }
+        } else if(code.op(line) == Op.TFORPREP) {
+          // Lua5.0 FORPREP - no assignments
+          newLocals.clear();
         } else {
           //System.out.println("-- Process iterating ... ");
           for(Operation operation : operations) {
@@ -527,7 +544,7 @@ public class Decompiler {
         return !r.isLocal(code.A(line), line);
       case SETTABLE: {
         int C = code.C(line);
-        if((C & 0x100) != 0) {
+        if(f.isConstant(C)) {
           return false;
         } else {
           return !r.isLocal(C, line);
@@ -564,7 +581,7 @@ public class Decompiler {
       case SETGLOBAL:
         return r.getExpression(A, previous);
       case SETTABLE:
-        if((C & 0x100) != 0) {
+        if(f.isConstant(C)) {
           throw new IllegalStateException();
         } else {
           return r.getExpression(C, previous);
@@ -684,6 +701,16 @@ public class Decompiler {
             stack.push(new TestSetNode(code.A(line), code.B(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
             skip[line + 1] = true;            
             continue;
+          case TEST50:
+            if(code.A(line) == code.B(line)) {
+              stack.push(new TestNode(code.A(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+            } else {
+              testset = true;
+              testsetend = line + 2 + code.sBx(line + 1);
+              stack.push(new TestSetNode( code.A(line), code.B(line), code.C(line) != 0, line, line + 2, line + 2 + code.sBx(line + 1)));
+            }
+            skip[line + 1] = true;
+            continue;
           case JMP: {
             reduce = true;
             int tline = line + 1 + code.sBx(line);
@@ -703,9 +730,21 @@ public class Decompiler {
               skip[tline] = true;
               skip[tline + 1] = true;
               blocks.add(new TForBlock(function, line + 1, tline + 2, A, C, r));
+            } else if(code.op(tline) == forTarget && !skip[tline]) {
+              int A = code.A(tline);
+              r.setInternalLoopVariable(A, tline, line + 1); //TODO: end?
+              r.setInternalLoopVariable(A + 1, tline, line + 1);
+              r.setInternalLoopVariable(A + 2, tline, line + 1);
+              skip[tline] = true;
+              skip[tline+1] = true;
+              blocks.add(new ForBlock(function, line + 1, tline + 1, A, r));
             } else if(code.sBx(line) == 2 && code.op(line + 1) == Op.LOADBOOL && code.C(line + 1) != 0) {
               /* This is the tail of a boolean set with a compare node and assign node */
               blocks.add(new BooleanIndicator(function, line));
+            } else if(code.op(tline) == Op.JMP && code.sBx(tline) + tline == line) {
+              if(first)
+                blocks.add(new AlwaysLoop(function, line, tline+1));
+              skip[tline] = true;
             } else {
               /*
               for(Block block : blocks) {
@@ -714,7 +753,7 @@ public class Decompiler {
                 }
               }
               */
-              if(first || loopRemoved[line]) {
+              if(first || loopRemoved[line] || reverseTarget[line+1]) {
                 if(tline > line) {
                   isBreak[line] = true;
                   blocks.add(new Break(function, line, tline));
@@ -744,6 +783,22 @@ public class Decompiler {
           case FORLOOP:
             /* Should be skipped by preceding FORPREP */
             throw new IllegalStateException();
+          case TFORPREP: {
+            reduce = true;
+            int tline = line + 1 + code.sBx(line);
+            int A = code.A(tline);
+            int C = code.C(tline);
+            r.setInternalLoopVariable(A, tline, line + 1); // TODO: end?
+            r.setInternalLoopVariable(A + 1, tline, line + 1);
+            r.setInternalLoopVariable(A + 2, tline, line + 1);
+            for(int index = 1; index <= C; index++) {
+              r.setExplicitLoopVariable(A + 2 + index, line, tline + 2); // TODO: end?
+            }
+            skip[tline] = true;
+            skip[tline + 1] = true;
+            blocks.add(new TForBlock(function, line + 1, tline + 2, A, C, r));
+            break;
+          }
           default:
             reduce = isStatement(line);
             break;
@@ -840,7 +895,7 @@ public class Decompiler {
           Stack<Branch> backup = backups.pop();
           int breakTarget = breakTarget(cond.begin);
           boolean breakable = (breakTarget >= 1);
-          if(breakable && code.op(breakTarget) == Op.JMP) {
+          if(breakable && code.op(breakTarget) == Op.JMP && function.header.version != Version.LUA50) {
             breakTarget += 1 + code.sBx(breakTarget);
           }
           if(breakable && breakTarget == cond.end) {
@@ -886,10 +941,15 @@ public class Decompiler {
             }
             blocks.add(new CompareBlock(function, begin, begin + 2, target, cond));
           } else if(cond.end < cond.begin) {
-            blocks.add(new RepeatBlock(function, cond, r));
+            if(isBreak[cond.end - 1]) {
+              skip[cond.end - 1] = true;
+              blocks.add(new WhileBlock(function, cond.invert(), originalTail, r));
+            } else {
+              blocks.add(new RepeatBlock(function, cond, r));
+            }
           } else if(hasTail) {
             Op endOp = code.op(cond.end - 2);
-            boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET;
+            boolean isEndCondJump = endOp == Op.EQ || endOp == Op.LE || endOp == Op.LT || endOp == Op.TEST || endOp == Op.TESTSET || endOp == Op.TEST50;
             if(tail > cond.end || (tail == cond.end && !isEndCondJump)) {
               Op op = code.op(tail - 1);
               int sbx = code.sBx(tail - 1);
@@ -1208,6 +1268,7 @@ public class Decompiler {
       case RETURN:
       case FORLOOP:
       case FORPREP:
+      case TFORPREP:
       case TFORCALL:
       case TFORLOOP:
       case CLOSE:
@@ -1219,7 +1280,10 @@ public class Decompiler {
       case LE:
       case TEST:
       case TESTSET:
+      case TEST50:
       case SETLIST:
+      case SETLISTO:
+      case SETLIST50:
         return false;
       case CALL: {
         int a = code.A(line);
@@ -1304,6 +1368,8 @@ public class Decompiler {
       case TEST:
       case TESTSET:
       case SETLIST:
+      case SETLIST50:
+      case SETLISTO:
         return -1;
       case CALL: {
         if(code.C(line) == 2) {

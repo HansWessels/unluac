@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import unluac.Version;
+import unluac.decompile.Code;
+import unluac.decompile.Code50;
+import unluac.decompile.CodeExtract;
 
 
 public class BHeader {
@@ -29,6 +32,7 @@ public class BHeader {
   public final LLocalType local;
   public final LUpvalueType upvalue;
   public final LFunctionType function;
+  public final CodeExtract extractor;
   
   public BHeader(ByteBuffer buffer) {
     // 4 byte Lua signature
@@ -41,6 +45,9 @@ public class BHeader {
     int versionNumber = 0xFF & buffer.get();
     switch(versionNumber)
     {
+      case 0x50:
+        version = Version.LUA50;
+        break;
       case 0x51:
         version = Version.LUA51;
         break;
@@ -50,19 +57,21 @@ public class BHeader {
       default: {
         int major = versionNumber >> 4;
         int minor = versionNumber & 0x0F;
-        throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.1 and Lua 5.2.");
+        throw new IllegalStateException("The input chunk's Lua version is " + major + "." + minor + "; unluac can only handle Lua 5.0, Lua 5.1 and Lua 5.2.");
       }
     }
     if(debug) {
       System.out.println("-- version: 0x" + Integer.toHexString(versionNumber));
     }
-    // 1 byte Lua "format"
-    int format = 0xFF & buffer.get();
-    if(format != 0) {
-      throw new IllegalStateException("The input chunk reports a non-standard lua format: " + format);
-    }
-    if(debug) {
-      System.out.println("-- format: " + format);
+    if(version.hasFormat()) {
+      // 1 byte Lua "format"
+      int format = 0xFF & buffer.get();
+      if(format != 0) {
+        throw new IllegalStateException("The input chunk reports a non-standard lua format: " + format);
+      }
+      if(debug) {
+        System.out.println("-- format: " + format);
+      }
     }
     // 1 byte endianness
     int endianness = 0xFF & buffer.get();
@@ -99,19 +108,33 @@ public class BHeader {
     if(instructionSize != 4) {
       throw new IllegalStateException("The input chunk reports an unsupported instruction size: " + instructionSize + " bytes");
     }
+    if(version == Version.LUA50) {
+      int sizeOp = 0xFF & buffer.get();
+      int sizeA = 0xFF & buffer.get();
+      int sizeB = 0xFF & buffer.get();
+      int sizeC = 0xFF & buffer.get();
+      extractor = new Code50(sizeOp, sizeA, sizeB, sizeC);
+    } else {
+      extractor = Code.Code51;
+    }
     int lNumberSize = 0xFF & buffer.get();
     if(debug) {
       System.out.println("-- Lua number size: " + lNumberSize);
     }
-    int lNumberIntegralCode = 0xFF & buffer.get();
-    if(debug) {
-      System.out.println("-- Lua number integral code: " + lNumberIntegralCode);
+    if(version == Version.LUA50) {
+      number = new LNumberType(lNumberSize, false);
+      buffer.getDouble();
+    } else {
+      int lNumberIntegralCode = 0xFF & buffer.get();
+      if(debug) {
+        System.out.println("-- Lua number integral code: " + lNumberIntegralCode);
+      }
+      if(lNumberIntegralCode > 1) {
+        throw new IllegalStateException("The input chunk reports an invalid code for lua number integralness: " + lNumberIntegralCode);
+      }
+      boolean lNumberIntegral = (lNumberIntegralCode == 1);
+      number = new LNumberType(lNumberSize, lNumberIntegral);
     }
-    if(lNumberIntegralCode > 1) {
-      throw new IllegalStateException("The input chunk reports an invalid code for lua number integralness: " + lNumberIntegralCode);
-    }
-    boolean lNumberIntegral = (lNumberIntegralCode == 1);
-    number = new LNumberType(lNumberSize, lNumberIntegral);
     bool = new LBooleanType();
     string = new LStringType();
     constant = new LConstantType();

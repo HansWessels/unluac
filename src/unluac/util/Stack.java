@@ -24,6 +24,9 @@ public class Stack<T> {
   }
   
   public void push(T item) {
+    if (data.size() > 65536) {
+      throw new IndexOutOfBoundsException("Trying to push more than 65536 items!");
+    }
     data.add(item);
   }
   

@@ -45,7 +45,12 @@ public enum Op {
   GETTABUP(OpcodeFormat.A_B_C),
   SETTABUP(OpcodeFormat.A_B_C),
   TFORCALL(OpcodeFormat.A_C),
-  EXTRAARG(OpcodeFormat.Ax);
+  EXTRAARG(OpcodeFormat.Ax),
+  // Lua 5.0 Opcodes
+  SETLIST50(OpcodeFormat.A_B_C),
+  SETLISTO(OpcodeFormat.A_Bx),
+  TFORPREP(OpcodeFormat.A_sBx),
+  TEST50(OpcodeFormat.A_B_C);
   
   private final OpcodeFormat format;
   
@@ -53,24 +58,24 @@ public enum Op {
     this.format = format;
   }
   
-  public String codePointToString(int codepoint) {
+  public String codePointToString(int codepoint, CodeExtract ex) {
     switch(format) {
       case A:
-        return this.name() + " " + Code.extract_A(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint);
       case A_B:
-        return this.name() + " " + Code.extract_A(codepoint) + " " + Code.extract_B(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint) + " " + ex.extract_B(codepoint);
       case A_C:
-        return this.name() + " " + Code.extract_A(codepoint) + " " + Code.extract_C(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint) + " " + ex.extract_C(codepoint);
       case A_B_C:
-        return this.name() + " " + Code.extract_A(codepoint) + " " + Code.extract_B(codepoint) + " " + Code.extract_C(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint) + " " + ex.extract_B(codepoint) + " " + ex.extract_C(codepoint);
       case A_Bx:
-        return this.name() + " " + Code.extract_A(codepoint) + " " + Code.extract_Bx(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint) + " " + ex.extract_Bx(codepoint);
       case A_sBx:
-        return this.name() + " " + Code.extract_A(codepoint) + " " + Code.extract_sBx(codepoint);
+        return this.name() + " " + ex.extract_A(codepoint) + " " + ex.extract_sBx(codepoint);
       case Ax:
         return this.name() + " <Ax>"; 
       case sBx:
-        return this.name() + " " + Code.extract_sBx(codepoint);
+        return this.name() + " " + ex.extract_sBx(codepoint);
       default:
         return this.name();
     }
