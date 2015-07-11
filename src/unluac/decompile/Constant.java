@@ -99,8 +99,19 @@ public class Constant {
             unprintable++;
           }
         }
-        if(unprintable == 0 && !string.contains("[[") && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
+        if(unprintable == 0 /* && !string.contains("[[") */ && (newlines > 1 || (newlines == 1 && string.indexOf('\n') != string.length() - 1))) {
           int pipe = 0;
+          
+          // check if the string ends with a ] closing bracket: we need to use a level>=1 delimiter to prevent a boo-boo then as otherwise the level0 delimited
+          // string would be wrong: example:
+          //    [[abc]]]
+          // as that would parse as 'abc' plus a dangling closing bracket past the ]] string sentinel!
+          char lc = string.charAt(string.length() - 1);
+          if (lc == ']') {
+            pipe = 1;       
+          }
+
+          // now find LUA double-bracketed delimiters of increasing level (>= 0)
           String pipeString = "]]";
           while(string.indexOf(pipeString) >= 0) {
             pipe++;
