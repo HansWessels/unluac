@@ -3,6 +3,7 @@ package unluac.decompile.block;
 import java.util.ArrayList;
 import java.util.List;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
 import unluac.parse.LFunction;
@@ -56,19 +57,19 @@ public class ElseEndBlock extends Block {
   }
   
   @Override
-  public void print(Output out) {    
+  public void print(Decompiler d, Output out) {    
     if(statements.size() == 1 && statements.get(0) instanceof IfThenEndBlock) {
       out.print("else");
-      statements.get(0).print(out);
+      statements.get(0).print(d, out);
     } else if(statements.size() == 2 && statements.get(0) instanceof IfThenElseBlock && statements.get(1) instanceof ElseEndBlock) {
       out.print("else");
-      statements.get(0).print(out);
-      statements.get(1).print(out);
+      statements.get(0).print(d, out);
+      statements.get(1).print(d, out);
     } else {
       out.print("else");
       out.println();
       out.indent();
-      Statement.printSequence(out, statements);
+      Statement.printSequence(d, out, statements);
       out.dedent();
       out.print("end");
     }

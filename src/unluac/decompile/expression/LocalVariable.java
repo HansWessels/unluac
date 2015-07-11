@@ -1,6 +1,7 @@
 package unluac.decompile.expression;
 
 import unluac.decompile.Declaration;
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class LocalVariable extends Expression {
@@ -23,7 +24,7 @@ public class LocalVariable extends Expression {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print(decl.name);
   }
   

@@ -1,5 +1,6 @@
 package unluac.decompile.statement;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.expression.FunctionCall;
 
@@ -12,8 +13,8 @@ public class FunctionCallStatement extends Statement {
   }
 
   @Override
-  public void print(Output out) {
-    call.print(out);
+  public void print(Decompiler d, Output out) {
+    call.print(d, out);
   }
   
   @Override

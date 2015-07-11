@@ -2,7 +2,6 @@ package unluac.decompile.branch;
 
 import unluac.decompile.Registers;
 import unluac.decompile.expression.Expression;
-import unluac.decompile.statement.Assignment;
 
 public class AssignNode extends Branch {
 

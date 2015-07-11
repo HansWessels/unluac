@@ -1,6 +1,7 @@
 package unluac.decompile.target;
 
 import unluac.decompile.Declaration;
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class VariableTarget extends Target {
@@ -12,12 +13,12 @@ public class VariableTarget extends Target {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print(decl.name);
   }
   
   @Override
-  public void printMethod(Output out) {
+  public void printMethod(Decompiler d, Output out) {
     throw new IllegalStateException();
   }
   

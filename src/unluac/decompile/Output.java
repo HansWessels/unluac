@@ -15,6 +15,11 @@ public class Output {
       }
 
       @Override
+      public void print(byte b) {
+        System.out.write(b);
+      }
+      
+      @Override
       public void println() {
         System.out.println();
       }
@@ -59,6 +64,12 @@ public class Output {
     start();
     out.print(s);
     position += s.length();
+  }
+  
+  public void print(byte b) {
+    start();
+    out.print(b);
+    position += 1;
   }
   
   public void println() {

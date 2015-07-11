@@ -1,5 +1,6 @@
 package unluac.decompile.block;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.statement.Statement;
 import unluac.parse.LFunction;
@@ -40,12 +41,12 @@ public class Break extends Block {
   }
 
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("do break end");
   }
   
   @Override
-  public void printTail(Output out) {
+  public void printTail(Decompiler d, Output out) {
     out.print("break");
   }
   

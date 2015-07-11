@@ -1,5 +1,6 @@
 package unluac.decompile.target;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 
 public class GlobalTarget extends Target {
@@ -11,12 +12,12 @@ public class GlobalTarget extends Target {
   }
 
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print(name);
   }
   
   @Override
-  public void printMethod(Output out) {
+  public void printMethod(Decompiler d, Output out) {
     throw new IllegalStateException();
   }
   

@@ -56,7 +56,11 @@ public class Code {
       System.out.println("line " + line + ": " + toString(line));
       reentered = false;
     }*/
-    return map.get(code[line - 1] & 0x0000003F);
+    return map.get(opcode(line));
+  }
+  
+  public int opcode(int line) {
+    return code[line - 1] & 0x0000003F;
   }
   
   public int A(int line) {
@@ -81,6 +85,10 @@ public class Code {
 
   public int codepoint(int line) {
     return code[line - 1];
+  }
+  
+  public int length() {
+    return code.length;
   }
   
   public String toString(int line) {

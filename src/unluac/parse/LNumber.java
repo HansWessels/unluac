@@ -1,5 +1,7 @@
 package unluac.parse;
 
+import unluac.parse.LNumberType.NumberMode;
+
 public abstract class LNumber extends LObject {
 
   public static LNumber makeInteger(int number) {
@@ -16,14 +18,16 @@ public abstract class LNumber extends LObject {
 class LFloatNumber extends LNumber {
   
   public final float number;
+  public final LNumberType.NumberMode mode;
   
-  public LFloatNumber(float number) {
+  public LFloatNumber(float number, LNumberType.NumberMode mode) {
     this.number = number;
+    this.mode = mode;
   }
   
   @Override
   public String toString() {
-    if(number == (float) Math.round(number)) {
+    if(mode == LNumberType.NumberMode.MODE_NUMBER && number == (float) Math.round(number)) {
       return Integer.toString((int) number);
     } else {
       return Float.toString(number);
@@ -50,14 +54,16 @@ class LFloatNumber extends LNumber {
 class LDoubleNumber extends LNumber {
   
   public final double number;
+  public final LNumberType.NumberMode mode;
   
-  public LDoubleNumber(double number) {
+  public LDoubleNumber(double number, LNumberType.NumberMode mode) {
     this.number = number;
+    this.mode = mode;
   }
   
   @Override
   public String toString() {
-    if(number == (double) Math.round(number)) {
+    if(mode == LNumberType.NumberMode.MODE_NUMBER && number == (double) Math.round(number)) {
       return Long.toString((long) number);
     } else {
       return Double.toString(number);

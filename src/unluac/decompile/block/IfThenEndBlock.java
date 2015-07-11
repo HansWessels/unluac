@@ -63,13 +63,13 @@ public class IfThenEndBlock extends Block {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("if ");
-    branch.asExpression(r).print(out);
+    branch.asExpression(r).print(d, out);
     out.print(" then");
     out.println();
     out.indent();
-    Statement.printSequence(out, statements);
+    Statement.printSequence(d, out, statements);
     out.dedent();
     out.print("end");
   }
@@ -119,7 +119,7 @@ public class IfThenEndBlock extends Block {
       if(test >= 0) {
         if(r.getUpdated(test, branch.end - 1) >= branch.begin) {
           Expression right = r.getValue(test, branch.end);
-          final Branch setb = d.popSetCondition(stack, stack.peek().end);
+          final Branch setb = d.popSetCondition(stack, stack.peek().end, test);
           setb.useExpression(right);
           final int testreg = test;
           return new Operation(end - 1) {

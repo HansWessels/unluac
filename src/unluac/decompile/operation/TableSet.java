@@ -27,7 +27,8 @@ public class TableSet extends Operation {
 
   @Override
   public Statement process(Registers r, Block block) {
-    if(table.isTableLiteral()) {
+    // .isTableLiteral() is sufficient when there is debugging info
+    if(table.isTableLiteral() && (value.isMultiple() || table.isNewEntryAllowed())) {
       table.addEntry(new TableLiteral.Entry(index, value, !isTable, timestamp));
       return null;
     } else {

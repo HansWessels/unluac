@@ -47,10 +47,19 @@ public enum Op {
   TFORCALL(OpcodeFormat.A_C),
   EXTRAARG(OpcodeFormat.Ax),
   // Lua 5.0 Opcodes
+  NEWTABLE50(OpcodeFormat.A_B_C),
   SETLIST50(OpcodeFormat.A_B_C),
   SETLISTO(OpcodeFormat.A_Bx),
   TFORPREP(OpcodeFormat.A_sBx),
-  TEST50(OpcodeFormat.A_B_C);
+  TEST50(OpcodeFormat.A_B_C),
+  // Lua 5.3 Opcodes
+  IDIV(OpcodeFormat.A_B_C),
+  BAND(OpcodeFormat.A_B_C),
+  BOR(OpcodeFormat.A_B_C),
+  BXOR(OpcodeFormat.A_B_C),
+  SHL(OpcodeFormat.A_B_C),
+  SHR(OpcodeFormat.A_B_C),
+  BNOT(OpcodeFormat.A_B);
   
   private final OpcodeFormat format;
   

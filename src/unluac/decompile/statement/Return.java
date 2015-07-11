@@ -2,6 +2,7 @@ package unluac.decompile.statement;
 
 import java.util.ArrayList;
 
+import unluac.decompile.Decompiler;
 import unluac.decompile.Output;
 import unluac.decompile.expression.Expression;
 
@@ -23,14 +24,14 @@ public class Return extends Statement {
   }
   
   @Override
-  public void print(Output out) {
+  public void print(Decompiler d, Output out) {
     out.print("do ");
-    printTail(out);
+    printTail(d, out);
     out.print(" end");
   }
   
   @Override
-  public void printTail(Output out) {
+  public void printTail(Decompiler d, Output out) {
     out.print("return");
     if(values.length > 0) {
       out.print(" ");
@@ -38,7 +39,7 @@ public class Return extends Statement {
       for(Expression value : values) {
         rtns.add(value);
       }
-      Expression.printSequence(out, rtns, false, true);
+      Expression.printSequence(d, out, rtns, false, true);
     }
   }
 
