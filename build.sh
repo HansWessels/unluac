@@ -24,6 +24,8 @@ jar -cfm bin/unluac.jar  src/unluac/Manifest.mf  -C build  .
 #
 # and place the new compiled JAR file in the active tool directory:
 #
-cp bin/unluac.jar ../../whereigo_bulk_decompilercrypter/tools/
+if test -d ../../whereigo_bulk_decompilercrypter/tools/ ; then
+	cp bin/unluac.jar ../../whereigo_bulk_decompilercrypter/tools/
+fi
 
 popd								2> /dev/null > /dev/null
