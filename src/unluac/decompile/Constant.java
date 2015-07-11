@@ -122,15 +122,15 @@ public class Constant {
           }
           if(braced) out.print("(");
           out.print("[");
-          while(pipe-- > 0) out.print("=");
+          for(int i = 0; i < pipe; i++) out.print("=");
           out.print("[");
           int indent = out.getIndentationLevel();
           out.setIndentationLevel(0);
           out.println();
           out.print(string);
-          out.print("[");
-          while(pipe-- > 0) out.print("=");
-          out.print("[");
+          out.print("]");
+          for(int i = 0; i < pipe; i++) out.print("=");
+          out.print("]");
           if(braced) out.print(")");
           out.setIndentationLevel(indent);
         } else {
