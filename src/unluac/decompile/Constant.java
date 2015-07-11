@@ -128,7 +128,9 @@ public class Constant {
           out.setIndentationLevel(0);
           out.println();
           out.print(string);
-          out.print(pipeString);
+          out.print("[");
+          while(pipe-- > 0) out.print("=");
+          out.print("[");
           if(braced) out.print(")");
           out.setIndentationLevel(indent);
         } else {
