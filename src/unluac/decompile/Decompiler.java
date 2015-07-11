@@ -612,7 +612,7 @@ public class Decompiler {
       case SETTABUP: {
         int A = code.A(line);
         int B = code.B(line);
-        return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, line));
+        return new TableTarget(upvalues.getExpression(A), r.getKExpression(B, previous));
       }
       default:
         throw new IllegalStateException();
@@ -803,18 +803,20 @@ public class Decompiler {
               }
               */
               if(first || loopRemoved[line] || reverseTarget[line+1]) {
-                if(tline > line) {
-                  isBreak[line] = true;
-                  blocks.add(new Break(function, line, tline));
-                } else {
-                  Block enclosing = enclosingBreakableBlock(line);
-                  if(enclosing != null && enclosing.breakable() && code.op(enclosing.end) == Op.JMP && code.sBx(enclosing.end) + enclosing.end + 1 == tline) {
+                if(!isBreak[line]) {
+                  if(tline > line) {
                     isBreak[line] = true;
-                    blocks.add(new Break(function, line, enclosing.end));
+                    blocks.add(new Break(function, line, tline));
                   } else {
-                    blocks.add(new AlwaysLoop(function, tline, line + 1));
+                    Block enclosing = enclosingBreakableBlock(line);
+                    if(enclosing != null && enclosing.breakable() && code.op(enclosing.end) == Op.JMP && code.sBx(enclosing.end) + enclosing.end + 1 == tline) {
+                      isBreak[line] = true;
+                      blocks.add(new Break(function, line, enclosing.end));
+                    } else {
+                      blocks.add(new AlwaysLoop(function, tline, line + 1));
+                    }
+                    
                   }
-                  
                 }
               }
             }

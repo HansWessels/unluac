@@ -105,6 +105,7 @@ public class TestFiles {
     "report02e",
     "report03",
     "report04",
+    "report05",
     "51_expression",
     "51_ellipsis",
     "51_adjust02",
